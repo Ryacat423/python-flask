@@ -1,0 +1,36 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+
+# Packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs and runtime
+*.log
+instance/
+*.pid
+
+# Flask cache & sessions
+.flask_session/
+
+# Database (in case you use sqlite for testing)
+*.sqlite3
+db.sqlite3
+
+# OS-specific
+.DS_Store
+Thumbs.db
