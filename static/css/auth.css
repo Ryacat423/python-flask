@@ -1,0 +1,57 @@
+.auth-container {
+    margin-top: clamp(5vh, 15vh, 20vh);
+    padding: clamp(1rem, 3vw, 2rem);
+}
+
+h3 {
+    font-size: clamp(1.5rem, 2vw, 2rem);
+    font-weight: 600;
+    color: var(--dark-blue);
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--dark-blue);
+    font-size: clamp(0.9rem, 1vw, 1rem);
+}
+
+.form-control {
+    border-radius: 0.6rem;
+    padding: clamp(0.6rem, 1.5vw, 0.75rem) clamp(0.9rem, 2vw, 1rem);
+    font-size: clamp(0.9rem, 1vw, 1rem);
+    border: 1px solid #e2e8f0;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 0.2rem rgba(26, 115, 232, 0.25);
+}
+
+.btn-primary {
+    background: var(--primary-blue);
+    border: none;
+    border-radius: 0.6rem;
+    padding: clamp(0.6rem, 1.5vw, 0.75rem);
+    font-size: clamp(0.95rem, 1vw, 1.05rem);
+    font-weight: 600;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: var(--accent-blue);
+    transform: translateY(-2px);
+}
+
+.text-center a {
+    color: var(--primary-blue);
+    font-weight: 500;
+    text-decoration: none;
+    font-size: clamp(0.85rem, 1vw, 0.95rem);
+}
+
+.text-center a:hover {
+    color: var(--accent-blue);
+    text-decoration: underline;
+}

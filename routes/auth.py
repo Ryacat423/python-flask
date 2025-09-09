@@ -11,11 +11,11 @@ def auth_register():
         
         if password != confirm_password:
             flash('Passwords do not match!', 'error')
-            return render_template('register.html')
+            return render_template('/auth/register.html')
         
         if users.find_one({'email': email}):
             flash('Email already registered!', 'error')
-            return render_template('register.html')
+            return render_template('/auth/register.html')
         
         user_data = {
             'name': name,
@@ -33,7 +33,7 @@ def auth_register():
         else:
             flash('Registration failed. Please try again.', 'error')
     
-    return render_template('register.html')
+    return render_template('/auth/register.html')
 
 def auth_login():
     if request.method == 'POST':
@@ -53,7 +53,7 @@ def auth_login():
         else:
             flash('Invalid email or password!', 'error')
     
-    return render_template('login.html')
+    return render_template('/auth/login.html')
 
 def auth_logout():
     session.clear()

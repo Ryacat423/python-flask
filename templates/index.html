@@ -1,1 +1,74 @@
 {% extends "base.html" %}
+
+{% block additional_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="hero-content fade-in">
+                    <h1 class="mb-4">Organize Your Work with <span style="color: var(--primary-blue);">Kanban Pro</span></h1>
+                    <p class="lead mb-4">Streamline your workflow, boost productivity, and collaborate seamlessly with our intuitive Kanban board system. Perfect for teams of all sizes.</p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <button class="btn btn-primary-custom text-light">
+                            Get Started <i class="bi bi-arrow-right"></i>
+                        </button>
+                        <button class="btn btn-outline-custom">
+                            Sign In
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center slide-up">
+                    <i class="bi bi-clipboard-data" style="font-size: 15rem; color: var(--accent-blue); opacity: 0.1;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="features" class="features">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-6 mx-auto text-center">
+                <h2 class="display-5 fw-bold mb-3">Why Choose Kanban Pro?</h2>
+                <p class="lead text-muted">Powerful features designed to make project management effortless and efficient.</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                    <i class="bi bi-columns-gap"></i>
+                    </div>
+                    <h4>Visual Workflow</h4>
+                    <p class="text-muted">Organize tasks in customizable columns that reflect your unique workflow process.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                    <i class="bi bi-people-fill"></i>
+                    </div>
+                    <h4>Team Collaboration</h4>
+                    <p class="text-muted">Work together seamlessly with real-time updates and team member assignments.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                    <i class="bi bi-bar-chart-line"></i>
+                    </div>
+                    <h4>Progress Tracking</h4>
+                    <p class="text-muted">Monitor project progress with advanced analytics and reporting features.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
