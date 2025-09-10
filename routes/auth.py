@@ -1,18 +1,18 @@
 from flask import request, flash, render_template, redirect, url_for, session
 from db import users_collection as users
+from functools import wraps
 
-from datetime import datetime
 from utils.auth_checker import validate_email, validate_password
 
 secret_key = "123"
 
 def auth_register():
     if request.method == 'POST':
-        fname = request.form.get('fname', '').strip()
-        lname = request.form.get('lname', '').strip()
-        email = request.form.get('email', '').strip().lower()
-        password = request.form.get('password', '')
-        confirm_password = request.form.get('confirm_password', '')
+        fname = request.form['fname'].strip()
+        lname = request.form['lname'].strip()
+        email = request.form['email'].strip().lower()
+        password = request['password']
+        confirm_password = request['confirm_password']
 
         if not all([fname, lname, email, password, confirm_password]):
             flash('All fields are required!', 'error')
@@ -61,8 +61,8 @@ def auth_register():
 
 def auth_login():
     if request.method == 'POST':
-        email = request.form.get('email', '').strip().lower()
-        password = request.form.get('password', '')
+        email = request.form['email'].strip().lower()
+        password = request.form['password']
         
         if not email or not password:
             flash('Email and password are required!', 'error')
@@ -80,7 +80,7 @@ def auth_login():
                 next_page = request.form.get('next') or request.args.get('next')
                 if next_page:
                     return redirect(next_page)
-                return redirect(url_for('index'))
+                return redirect(url_for('dashboard'))
             else:
                 flash('Invalid email or password!', 'error')
                 return render_template('/auth/login.html')
@@ -93,7 +93,14 @@ def auth_login():
     return render_template('/auth/login.html')
 
 def auth_logout():
-    user_name = session.get('name', 'User')
     session.clear()
+    return redirect(url_for('login'))
 
-    return render_template('index.html', user_name=user_name)
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Please log in to access the page.', 'error')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function

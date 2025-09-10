@@ -33,3 +33,16 @@ document.querySelectorAll('.feature-card').forEach(card => {
     card.style.transition = 'all 0.6s ease';
     observer.observe(card);
 });
+
+function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobile-menu');
+    const menuIcon = document.getElementById('menu-icon');
+    
+    mobileMenu.classList.toggle('show');
+    
+    if (mobileMenu.classList.contains('show')) {
+        menuIcon.className = 'bi bi-x';
+    } else {
+        menuIcon.className = 'bi bi-list';
+    }
+}

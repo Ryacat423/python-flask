@@ -71,7 +71,6 @@
     transform: translateY(-2px);
 }
 
-/* Features Section */
 .features {
     padding: 100px 0;
     background: white;
@@ -108,10 +107,12 @@
 @media (max-width: 768px) {
     .hero h1 {
         font-size: 2.5rem;
+        margin-top: 15vh;
     }
 
     .hero p {
         font-size: 1.1rem;
+        margin-top: 10vh;
     }
 }
 
