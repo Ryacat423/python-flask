@@ -34,3 +34,5 @@ db.sqlite3
 # OS-specific
 .DS_Store
 Thumbs.db
+
+util/oauth.py
