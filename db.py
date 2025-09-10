@@ -6,5 +6,5 @@ db = client["kanban_app"]
 users_collection = db["users"]
 
 
-db_test = client["im2project"]
-collection = db_test["products"]
+db_test = client["kanban"]
+collection = db_test["users"]

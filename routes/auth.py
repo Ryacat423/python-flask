@@ -2,9 +2,12 @@ from flask import request, flash, render_template, redirect, url_for, session
 from db import users_collection as users
 from datetime import datetime
 
+secret_key = "123"
+
 def auth_register():
     if request.method == 'POST':
-        name = request.form['name']
+        fname = request.form['fname']
+        lname = request.form['lname']
         email = request.form['email']
         password = request.form['password']
         confirm_password = request.form['confirm_password']
@@ -18,19 +21,16 @@ def auth_register():
             return render_template('/auth/register.html')
         
         user_data = {
-            'name': name,
+            'firstname': fname,
+            'lastname' : lname,
             'email': email,
             'password': password,
-            'role': 'user',
             'created_at': datetime.now()
         }
         
         result = users.insert_one(user_data)
         
-        if result.inserted_id:
-            flash('Registration successful! Please login.', 'success')
-            return redirect(url_for('login'))
-        else:
+        if not result.inserted_id:
             flash('Registration failed. Please try again.', 'error')
     
     return render_template('/auth/register.html')
