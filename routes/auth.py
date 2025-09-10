@@ -1,61 +1,99 @@
 from flask import request, flash, render_template, redirect, url_for, session
 from db import users_collection as users
+
 from datetime import datetime
+from utils.auth_checker import validate_email, validate_password
 
 secret_key = "123"
 
 def auth_register():
     if request.method == 'POST':
-        fname = request.form['fname']
-        lname = request.form['lname']
-        email = request.form['email']
-        password = request.form['password']
-        confirm_password = request.form['confirm_password']
+        fname = request.form.get('fname', '').strip()
+        lname = request.form.get('lname', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        if not all([fname, lname, email, password, confirm_password]):
+            flash('All fields are required!', 'error')
+            return render_template('/auth/register.html')
+        
+        if not validate_email(email):
+            flash('Please enter a valid email address!', 'error')
+            return render_template('/auth/register.html')
         
         if password != confirm_password:
             flash('Passwords do not match!', 'error')
             return render_template('/auth/register.html')
         
+        is_valid, password_message = validate_password(password)
+        if not is_valid:
+            flash(password_message, 'error')
+            return render_template('/auth/register.html')
+
         if users.find_one({'email': email}):
-            flash('Email already registered!', 'error')
+            flash('Email already registered! Please use a different email or try logging in.', 'error')
             return render_template('/auth/register.html')
         
-        user_data = {
-            'firstname': fname,
-            'lastname' : lname,
-            'email': email,
-            'password': password,
-            'created_at': datetime.now()
-        }
-        
-        result = users.insert_one(user_data)
-        
-        if not result.inserted_id:
-            flash('Registration failed. Please try again.', 'error')
+        try:
+            user_data = {
+                'firstname': fname,
+                'lastname': lname,
+                'email': email,
+                'password': password,
+                'email_verified': False
+            }
+            
+            result = users.insert_one(user_data)
+            
+            if result.inserted_id:
+                return render_template('/auth/register.html', success=True)
+            else:
+                flash('Registration failed. Please try again.', 'error')
+                return render_template('/auth/register.html')
+            
+        except Exception as e:
+            print(f"Registration error: {e}")
+            flash('An error occurred during registration. Please try again later.', 'error')
+            return render_template('/auth/register.html')
     
     return render_template('/auth/register.html')
 
 def auth_login():
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
         
-        user = users.find_one({'email': email})
+        if not email or not password:
+            flash('Email and password are required!', 'error')
+            return render_template('/auth/login.html')
         
-        if user and user['password'] == password:
-            session['user_id'] = str(user['_id'])
-            session['name'] = user['name']
-            session['email'] = user['email']
-            session['role'] = user.get('role', 'user')
+        try:
+            user = users.find_one({'email': email})
             
-            flash(f'Welcome back, {user["name"]}!', 'success')
-            return redirect(url_for('index'))
-        else:
-            flash('Invalid email or password!', 'error')
+            if user and user['password'] == password:
+                session['user_id'] = str(user['_id'])
+                session['name'] = f"{user['firstname']} {user['lastname']}"
+                session['email'] = user['email']
+                session['role'] = user.get('role', 'user')
+            
+                next_page = request.form.get('next') or request.args.get('next')
+                if next_page:
+                    return redirect(next_page)
+                return redirect(url_for('index'))
+            else:
+                flash('Invalid email or password!', 'error')
+                return render_template('/auth/login.html')
+                
+        except Exception as e:
+            print(f"Login error: {e}")
+            flash('An error occurred during login. Please try again.', 'error')
+            return render_template('/auth/login.html')
     
     return render_template('/auth/login.html')
 
 def auth_logout():
+    user_name = session.get('name', 'User')
     session.clear()
-    flash('You have been logged out.', 'success')
-    return redirect(url_for('index'))
+
+    return render_template('index.html', user_name=user_name)

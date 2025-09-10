@@ -28,16 +28,16 @@
                   {% endif %}
                 {% endwith %}
 
-                <div >
-                    <form method="POST" onsubmit="successAlert()">
+                <div>
+                    <form method="POST" id="registerForm">
                         <div class="row">
                             <div class="mb-3 col-md-6">
-                                <label for="name" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="name" name="fname" required>
+                                <label for="fname" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="fname" name="fname" required>
                             </div>
                             <div class="mb-3 col-md-6">
-                                <label for="name" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="name" name="lname" required>
+                                <label for="lname" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="lname" name="lname" required>
                             </div>
                         </div>
 
@@ -54,7 +54,7 @@
                             <span id="password-message" class="text-danger" style="font-size: 1em;"></span>
                             <input type="password" class="form-control" id="confirm_password" name="confirm_password" required oninput="comparePasswords()">
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Register</button>
+                        <button type="submit" class="btn btn-primary w-100" id="submitBtn">Register</button>
                     </form>
     
                     <div class="text-center mt-3">
@@ -68,7 +68,13 @@
 
 {% block scripts %}
     <script src="{{url_for('static', filename='js/auth.js')}}"></script>
-    <script src="{{url_for('static', filename='js/alerts.js')}}"></script>
+    {% if success %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            successAlert();
+        });
+    </script>
+    {% endif %}
 {% endblock %}
 
 {% endblock %}

@@ -24,7 +24,7 @@
                 <div class="navbar-nav ms-auto">
                     {% if session.get('user_id') %}
                         <span class="navbar-text me-3">Hello, {{ session.get('name') }}!</span>
-                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        <a class="nav-link" href="{{ url_for('logout') }}" onclick="confirmLogout(); return false">Logout</a>
                     {% else %}
                         <a class="nav-link" href="{{ url_for('login') }}">Login</a>
                         <a class="nav-link" href="{{ url_for('register') }}">Register</a>
@@ -39,6 +39,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{url_for('static', filename='js/alerts.js')}}"></script>
     {% block scripts%} {% endblock %}
 </body>
 </html>
