@@ -36,3 +36,5 @@ db.sqlite3
 Thumbs.db
 
 util/oauth.py
+
+static/
