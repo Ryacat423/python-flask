@@ -1,0 +1,110 @@
+{% extends "/main/layout.html" %}
+
+{% block additional_head %}
+
+<link rel="stylesheet" href="{{url_for('static', filename='css/main/controls.css')}}">
+<link rel="stylesheet" href="{{url_for('static', filename='css/main/projects.css')}}">
+{% endblock %}
+
+{% block content %}
+    <div class="header">
+        <h1>Projects</h1>
+        <p>Manage and track all your projects in one place</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">0</div>
+            <div class="stat-label">Total Projects</div>
+        </div>
+        <div class="stat-card active">
+            <div class="stat-number">0</div>
+            <div class="stat-label">Active Projects</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">0</div>
+            <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">0</div>
+            <div class="stat-label">On Hold</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="search-bar">
+            <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <input type="text" class="search-input" placeholder="Search projects..." id="searchInput">
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-secondary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                </svg>
+                Filter
+            </button>
+            <button class="btn btn-primary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Create Project
+            </button>
+            <button class="btn btn-primary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Add Project
+            </button>
+        </div>
+    </div>
+
+    <div class="projects-grid" id="projectsGrid">
+        <div class="project-card">
+            <div class="project-color color-blue"></div>
+            <div class="project-header">
+                <div>
+                    <div class="project-title">E-commerce Website</div>
+                    <div class="project-description">Building a modern online store with React and Node.js. This project includes user authentication, payment processing, and inventory management.</div>
+                </div>
+                <button class="project-menu">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="project-status status-active">Active</div>
+            
+            <div class="project-progress">
+                <div class="progress-label">
+                    <span>Progress</span>
+                    <span>75%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 75%"></div>
+                </div>
+            </div>
+            
+            <div class="project-footer">
+                <div class="project-meta">
+                    <div class="meta-item">
+                        <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6m-6 0l-1 12a2 2 0 002 2h6a2 2 0 002-2L16 7"></path>
+                        </svg>
+                        Dec 15, 2024
+                    </div>
+                    <div class="meta-item">
+                        <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                        </svg>
+                        3 Members
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

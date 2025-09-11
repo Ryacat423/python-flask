@@ -2,13 +2,17 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from routes.auth import auth_register, auth_login, auth_logout, login_required
 from db import users_collection as users
 from datetime import datetime
+
 from authlib.integrations.flask_client import OAuth
 from instance.api_key import *
 
+from flask_mail import Mail, Message
+
 app = Flask(__name__)
-app.secret_key = "your-secret-key"
+app.secret_key = "224ae51b_80A8"
 
 oauth = OAuth(app)
+mail = Mail(app)
 
 google = oauth.register(
     name="google",
@@ -17,6 +21,13 @@ google = oauth.register(
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     client_kwargs={"scope": "openid email profile"},
 )
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = DEL_EMAIL
+app.config['MAIL_PASSWORD'] = DEL_PASSWORD
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
 
 @app.route('/')
 def index():
@@ -92,6 +103,11 @@ def dashboard():
     user_email = session.get('email')
     
     return render_template('/main/dashboard.html', user_name=user_name, user_email=user_email)
+
+@app.route('/projects')
+@login_required
+def projects():
+    return render_template('/main/projects.html')
 
 @app.context_processor
 def inject_current_year():

@@ -1,5 +1,6 @@
 from flask import request, flash, render_template, redirect, url_for, session
 from db import users_collection as users
+
 from functools import wraps
 from utils.auth_checker import validate_email, validate_password
 
@@ -101,5 +102,3 @@ def login_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
-
-    

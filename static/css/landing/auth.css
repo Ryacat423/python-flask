@@ -48,6 +48,15 @@ h3 {
     transition: background 0.3s ease, transform 0.2s ease;
 }
 
+.btn-dark {
+    border: none;
+    border-radius: 0.6rem;
+    padding: clamp(0.6rem, 1.5vw, 0.75rem);
+    font-size: clamp(0.95rem, 1vw, 1.05rem);
+    font-weight: 600;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
 .btn-primary:hover {
     background: var(--accent-blue);
     transform: translateY(-2px);
