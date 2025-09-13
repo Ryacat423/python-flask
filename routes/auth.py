@@ -1,16 +1,18 @@
-from flask import request, flash, render_template, redirect, url_for, session
+from flask import request, flash, render_template, redirect, url_for, session, current_app
+from flask_mail import Message
 from db import users_collection as users
-
 from functools import wraps
 from utils.auth_checker import validate_email, validate_password
+from utils.token import generate_confirmation_token
+from extensions.mail import mail
 
 def auth_register():
     if request.method == 'POST':
         fname = request.form['fname'].strip()
         lname = request.form['lname'].strip()
         email = request.form['email'].strip().lower()
-        password = request['password']
-        confirm_password = request['confirm_password']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
 
         if not all([fname, lname, email, password, confirm_password]):
             flash('All fields are required!', 'error')
@@ -45,10 +47,33 @@ def auth_register():
             result = users.insert_one(user_data)
             
             if result.inserted_id:
-                return render_template('/auth/register.html', success=True)
-            else:
-                flash('Registration failed. Please try again.', 'error')
-                return render_template('/auth/register.html')
+                token = generate_confirmation_token(email)
+                confirm_url = url_for('confirm_email', token=token, _external=True)
+                try:
+                    msg = Message(
+                        subject="Confirm Your Email - KanFlow",
+                        sender=current_app.config['MAIL_USERNAME'],
+                        recipients=[email]
+                    )
+                    msg.html = f"""
+                    <h2>Hi {fname},</h2>
+                    <p>Please confirm your email by clicking the link below:</p>
+                    <p><a href="{confirm_url}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Confirm Email</a></p>
+                    <p>Or copy and paste this URL in your browser:</p>
+                    <p>{confirm_url}</p>
+                    <p>If you did not sign up, please ignore this message.</p>
+                    """
+                    
+                    msg.body = f"Hi {fname},\n\nPlease confirm your email by clicking the link below:\n{confirm_url}\n\nIf you did not sign up, ignore this message."
+                    mail.send(msg)
+                    
+                    flash('A confirmation email has been sent. Please check your inbox.', 'info')
+                    return redirect(url_for('login'))
+                    
+                except Exception as email_error:
+                    print(f"Email sending error: {email_error}")
+                    flash('Registration successful, but email could not be sent. Contact support for email verification.', 'warning')
+                    return redirect(url_for('login'))
             
         except Exception as e:
             print(f"Registration error: {e}")
@@ -70,6 +95,10 @@ def auth_login():
             user = users.find_one({'email': email})
             
             if user and user['password'] == password:
+                if not user.get('email_verified', False):
+                    flash('Please confirm your email before logging in.', 'warning')
+                    return render_template('/auth/login.html')
+                
                 session['user_id'] = str(user['_id'])
                 session['name'] = f"{user['firstname']} {user['lastname']}"
                 session['email'] = user['email']
