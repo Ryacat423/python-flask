@@ -1,9 +1,11 @@
 from flask import request, flash, render_template, redirect, url_for, session, current_app
-from flask_mail import Message
 from db import users_collection as users
-from functools import wraps
+
 from utils.auth_checker import validate_email, validate_password
 from utils.token import generate_confirmation_token
+from functools import wraps
+
+from flask_mail import Message
 from extensions.mail import mail
 
 def auth_register():
@@ -68,7 +70,7 @@ def auth_register():
                     mail.send(msg)
                     
                     flash('A confirmation email has been sent. Please check your inbox.', 'info')
-                    return redirect(url_for('login'))
+                    return redirect(url_for('login'), success = True)
                     
                 except Exception as email_error:
                     print(f"Email sending error: {email_error}")

@@ -39,6 +39,10 @@
                             <label for="password" class="form-label">Password</label>
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="showPassword" onclick="togglePassword()">
+                            <label class="form-check-label" for="showPassword">Show Password</label>
+                        </div>
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="bi bi-person-plus-fill"></i>    Login
                         </button>
@@ -61,3 +65,11 @@
     </div>
 </div>
 {% endblock %}
+
+{% if success %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        successAlert();
+    });
+</script>
+{% endif %}

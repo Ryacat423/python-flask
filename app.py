@@ -1,18 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from routes.auth import auth_register, auth_login, auth_logout, login_required
 from utils.token import confirm_token
-from db import users_collection as users
-from datetime import datetime
 
 from authlib.integrations.flask_client import OAuth
 from instance.api_key import *
-
 from extensions.mail import mail
-
-from flask_mail import Message
+from db import users_collection as users
+from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = "224ae51b_80A8"
+app.secret_key = SECRET_KEY
 
 oauth = OAuth(app)
 
