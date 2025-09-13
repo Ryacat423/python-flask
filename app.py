@@ -171,28 +171,5 @@ def projects():
 def inject_current_year():
     return {'current_year': datetime.now().year}
 
-
-@app.route('/debug/routes')
-def show_routes():
-    routes = []
-    for rule in app.url_map.iter_rules():
-        routes.append(f"{rule.rule} -> {rule.endpoint} [{', '.join(rule.methods)}]")
-    return "<br>".join(routes)
-
-# Test if your confirm route works at all
-@app.route('/test-confirm')
-def test_confirm():
-    return "Confirm route is accessible!"
-
-# Test with a sample token
-@app.route('/test-confirm-with-token')
-def test_confirm_with_token():
-    from utils.token import generate_confirmation_token
-    test_email = "test@example.com"
-    token = generate_confirmation_token(test_email)
-    test_url = url_for('confirm_email', token=token, _external=True)
-    return f"Generated URL: {test_url}<br><a href='{test_url}'>Click to test</a>"
-
-
 if __name__ == "__main__":
     app.run(debug=True)
