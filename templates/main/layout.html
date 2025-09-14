@@ -16,9 +16,14 @@
     <div class="layout-container">
         <aside class="sidebar d-none d-md-block">
             <div class="user-profile">
-                <div class="avatar"><img src="{{ url_for('static', filename='images/boy.png') }}" alt="App Logo" /></div>
+                <div class="avatar">
+                {% if profile %}
+                    <img src="{{ profile }}" alt="User Profile">
+                {%endif%}
+                </div>
                 <span>Hi User</span>
             </div>
+
             <nav>
                 <ul class="nav-menu px-0">
                     <li class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">

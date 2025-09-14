@@ -1,0 +1,96 @@
+{% extends "/main/layout.html" %}
+
+{% block additional_head %}
+<link rel="stylesheet" href="{{url_for('static', filename='css/main/controls.css')}}">
+<link rel="stylesheet" href="{{url_for('static', filename='css/main/project_form.css')}}">
+{% endblock %}
+
+{% block content %}
+<div class="create-project-container">
+    <div class="form-header">
+        <h1>Create New Project</h1>
+        <p>Set up your project details and get started with your team</p>
+    </div>
+
+    <form method="POST" class="create-form" id="createProjectForm">
+        <div class="form-group">
+            <label for="project_name" class="form-label required">Project Name</label>
+            <input 
+                type="text" 
+                id="project_name" 
+                name="project_name" 
+                class="form-input" 
+                placeholder="Enter your project name" 
+                required
+                value="{{ request.form.get('project_name', '') }}"
+            >
+            <div class="form-help">Choose a clear, descriptive name for your project</div>
+        </div>
+
+        <div class="form-group">
+            <label for="description" class="form-label">Project Description</label>
+            <textarea 
+                id="description" 
+                name="description" 
+                class="form-input form-textarea" 
+                placeholder="Describe your project goals, scope, and key objectives..."
+            >{{ request.form.get('description', '') }}</textarea>
+            <div class="form-help">Provide details about your project to help team members understand the goals</div>
+        </div>
+
+        {% set colors = [
+            ('blue', 'Blue'),
+            ('green', 'Green'),
+            ('purple', 'Purple'),
+            ('orange', 'Orange'),
+            ('red', 'Red'),
+            ('pink', 'Pink'),
+            ('indigo', 'Indigo'),
+            ('teal', 'Teal')
+        ] %}
+
+        <div class="form-group">
+            <label class="form-label">Project Color</label>
+            <div class="color-selection">
+                {% for value, label in colors %}
+                <div class="color-option {% if loop.first %}selected{% endif %}" data-color="{{ value }}">
+                    <div class="color-circle color-{{ value }}"></div>
+                    <div class="color-name">{{ label }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            <input type="hidden" name="project_color" id="project_color" value="{{ colors[0][0] }}">
+            <div class="form-help">Select a color to help identify your project</div>
+        </div>
+
+        <div class="project-preview" id="projectPreview">
+            <div class="preview-header">
+                <bi class="bi-eye"></bi>
+                Project Preview
+            </div>
+            <div class="preview-card">
+                <div class="preview-color color-blue" id="previewColor"></div>
+                <div class="preview-title" id="previewTitle">Project Name</div>
+                <div class="preview-description" id="previewDescription">Project description will appear here...</div>
+            </div>
+        </div>
+
+        <div class="form-actions pb-5">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i>
+                Create Project
+            </button>
+            <a href="{{ url_for('projects') }}" class="btn btn-secondary">
+                <i class="bi bi-x-lg"></i>
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+{% block scripts %}
+<script src="{{url_for('static', filename='js/projects_form.js')}}">
+</script>
+{% endblock %}
+
+{% endblock %}

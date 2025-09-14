@@ -1,7 +1,6 @@
 {% extends "/main/layout.html" %}
 
 {% block additional_head %}
-
 <link rel="stylesheet" href="{{url_for('static', filename='css/main/controls.css')}}">
 <link rel="stylesheet" href="{{url_for('static', filename='css/main/projects.css')}}">
 {% endblock %}
@@ -14,19 +13,19 @@
 
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-number">0</div>
+            <div class="stat-number">{{ stats.total_projects if stats else 0 }}</div>
             <div class="stat-label">Total Projects</div>
         </div>
         <div class="stat-card active">
-            <div class="stat-number">0</div>
+            <div class="stat-number">{{ stats.active_projects if stats else 0 }}</div>
             <div class="stat-label">Active Projects</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">0</div>
+            <div class="stat-number">{{ stats.completed_projects if stats else 0 }}</div>
             <div class="stat-label">Completed</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">0</div>
+            <div class="stat-number">{{ stats.on_hold_projects if stats else 0 }}</div>
             <div class="stat-label">On Hold</div>
         </div>
     </div>
@@ -46,65 +45,103 @@
                 </svg>
                 Filter
             </button>
-            <button class="btn btn-primary">
+            {% if projects %}
+            <a href="{{ url_for('create_project') }}" class="btn btn-primary">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
                 Create Project
-            </button>
-            <button class="btn btn-primary">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Add Project
-            </button>
+            </a>
+            {% endif %}
         </div>
     </div>
 
     <div class="projects-grid" id="projectsGrid">
-        <div class="project-card">
-            <div class="project-color color-blue"></div>
-            <div class="project-header">
-                <div>
-                    <div class="project-title">E-commerce Website</div>
-                    <div class="project-description">Building a modern online store with React and Node.js. This project includes user authentication, payment processing, and inventory management.</div>
+        {% if projects %}
+            {% for project in projects %}
+            <div class="project-card" data-project-id="{{ project._id }}">
+                <div class="project-color {{ project.color_class }}"></div>
+                <div class="project-header">
+                    <div>
+                        <div class="project-title">{{ project.project_name }}</div>
+                        <div class="project-description">
+                            {% if project.description %}
+                                {{ project.description[:150] }}{% if project.description|length > 150 %}...{% endif %}
+                            {% else %}
+                                No description provided.
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <button class="project-menu" onclick="toggleDropdown(this)">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01"></path>
+                            </svg>
+                        </button>
+                        <div class="dropdown-content">
+                            <a href="{{ url_for('project_view', project_id=project._id) }}">View Project</a>
+                            {% if project.user_id == session.user_id %}
+                            <a href="#">Edit Project</a>
+                            <a href="#">Add Member</a>
+                            <a href="#">Delete Project</a>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
-                <button class="project-menu">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01"></path>
+                
+                <div class="project-status status-{{ project.status }}">
+                    {{ project.status.title() }}
+                </div>
+                
+                <div class="project-progress">
+                    <div class="progress-label">
+                        <span>Progress</span>
+                        <span>{{ project.progress }}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <!-- <div class="progress-fill" style="width: {{ project.progress }}%"></div> -->
+                    </div>
+                </div>
+                
+                <div class="project-footer">
+                    <div class="project-meta">
+                        <div class="meta-item">
+                            <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6m-6 0l-1 12a2 2 0 002 2h6a2 2 0 002-2L16 7"></path>
+                            </svg>
+                            {{ project.formatted_date }}
+                        </div>
+                        <div class="meta-item">
+                            <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                            </svg>
+                            {{ project.member_count }} Member{{ 's' if project.member_count != 1 else '' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-content">
+                    <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="empty-icon">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
-                </button>
-            </div>
-            
-            <div class="project-status status-active">Active</div>
-            
-            <div class="project-progress">
-                <div class="progress-label">
-                    <span>Progress</span>
-                    <span>75%</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 75%"></div>
-                </div>
-            </div>
-            
-            <div class="project-footer">
-                <div class="project-meta">
-                    <div class="meta-item">
-                        <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6m-6 0l-1 12a2 2 0 002 2h6a2 2 0 002-2L16 7"></path>
+                    <h3>No Projects Yet</h3>
+                    <p>Get started by creating your first project</p>
+                    <a href="{{ url_for('create_project') }}" class="btn btn-primary">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
-                        Dec 15, 2024
-                    </div>
-                    <div class="meta-item">
-                        <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                        </svg>
-                        3 Members
-                    </div>
+                        Create Your First Project
+                    </a>
                 </div>
             </div>
-        </div>
+        {% endif %}
     </div>
 
+    {% block scripts %}
+    <script src="{{url_for('static', filename='js/projects.js')}}">
+    </script>
+    {% endblock %}
 {% endblock %}

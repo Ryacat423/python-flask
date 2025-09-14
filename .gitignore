@@ -38,3 +38,6 @@ Thumbs.db
 util/oauth.py
 
 /static/
+/notes.txt
+/test.html
+/test.py

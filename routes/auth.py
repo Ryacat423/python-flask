@@ -103,9 +103,10 @@ def auth_login():
                 
                 session['user_id'] = str(user['_id'])
                 session['name'] = f"{user['firstname']} {user['lastname']}"
+                session['picture'] = user['picture']
                 session['email'] = user['email']
                 session['role'] = user.get('role', 'user')
-            
+
                 next_page = request.form.get('next') or request.args.get('next')
                 if next_page:
                     return redirect(next_page)
@@ -124,12 +125,3 @@ def auth_login():
 def auth_logout():
     session.clear()
     return redirect(url_for('login'))
-
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            flash('Please log in to access the page.', 'error')
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function

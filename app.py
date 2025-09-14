@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from routes.auth import auth_register, auth_login, auth_logout, login_required
+from routes.auth import auth_register, auth_login, auth_logout
+from routes.projects import *
 from utils.token import confirm_token
+from utils.decorators import login_required
 
 from authlib.integrations.flask_client import OAuth
 from instance.api_key import *
@@ -32,6 +34,7 @@ google = oauth.register(
     client_kwargs={"scope": "openid email profile"},
 )
 
+# ====== LANDING & AUTH ROUTES ======
 @app.route('/')
 def index():
     return render_template('index.html', current_year = datetime.now().year)
@@ -151,22 +154,61 @@ def confirm_email(token):
     print("🔄 Redirecting to login page")
     return redirect(url_for('login'))
     
+# ====== END OF LANDING & AUTH ROUTES ======
+
+# ====== MAIN APPLICATION ROUTES ======
 @app.route('/dashboard')
 @login_required 
-def dashboard():
-    user_name = session.get('name', 'User')
-    user_email = session.get('email')
-    
-    return render_template('/main/dashboard.html', user_name=user_name, user_email=user_email)
+def dashboard():    
+    return render_template('/main/dashboard.html')
+
+# ====== PROJECT ROUTES ======
 
 @app.route('/projects')
 @login_required
 def projects():
-    return render_template('/main/projects.html')
+    return projects_list()
+
+@app.route('/projects/create', methods=['GET', 'POST'])
+@login_required
+def create_project():
+    return project_create()
+
+@app.route('/projects/<project_id>')
+@login_required
+def project_view(project_id):
+    return project_view(project_id)
+
+
+@app.route('/projects/<project_id>/add-member', methods=['GET', 'POST'])
+@login_required
+def add_member_to_project(project_id):
+    return project_add_member(project_id)
+
+# ====== END OF PROJECT ROUTES ======
 
 @app.context_processor
 def inject_current_year():
     return {'current_year': datetime.now().year}
 
+@app.context_processor
+def inject_user():
+    raw_profile = session.get('picture')
+
+    if raw_profile:
+        if raw_profile.startswith("http"):
+            profile_url = raw_profile
+        else:
+            profile_url = url_for('static', filename=f'uploads/{raw_profile}')
+    else:
+        profile_url = url_for('static', filename='images/boy.png')
+
+    return dict(
+        user_name=session.get('name', 'User'),
+        profile=profile_url,
+        user_email=session.get('email')
+    )
+
 if __name__ == "__main__":
     app.run(debug=True)
+
