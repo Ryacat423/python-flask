@@ -176,7 +176,7 @@ def create_project():
 
 @app.route('/projects/<project_id>')
 @login_required
-def project_view(project_id):
+def view_project(project_id):
     return project_view(project_id)
 
 

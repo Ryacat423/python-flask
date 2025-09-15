@@ -1,7 +1,8 @@
+from db import projects_collection as projects_collection
 from flask import request, flash, render_template, redirect, url_for, session
 
+from bson import ObjectId
 from datetime import datetime
-from db import projects_collection as projects_collection
 
 def projects_list(template):
     try:
@@ -90,7 +91,7 @@ def project_view(project_id):
         user_id = session.get('user_id')
         
         project = projects_collection.find_one({
-            '_id': project_id,
+            '_id': ObjectId(project_id),
             '$or': [
                 {'user_id': user_id},
                 {'members': user_id}

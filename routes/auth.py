@@ -103,7 +103,8 @@ def auth_login():
                 
                 session['user_id'] = str(user['_id'])
                 session['name'] = f"{user['firstname']} {user['lastname']}"
-                session['picture'] = user['picture']
+                session['picture'] = user.get('picture') or None
+
                 session['email'] = user['email']
                 session['role'] = user.get('role', 'user')
 

@@ -1,0 +1,15 @@
+{% extends "/main/layout.html" %}
+
+{% block additional_head %}
+<link rel="stylesheet" href="{{url_for('static', filename='css/main/projects.css')}}">
+{% endblock %}
+
+{% block content %}
+    <div class="header">
+        <div class="label">Project name:</div>
+        <h1>{{project.project_name}}</h1>
+                <div class="label">Project description:</div>
+        <p>{{project.description}}</p>
+    </div>
+
+{% endblock %}
