@@ -11,25 +11,6 @@
         <p>Manage and track all your projects in one place</p>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-number">{{ stats.total_projects if stats else 0 }}</div>
-            <div class="stat-label">Total Projects</div>
-        </div>
-        <div class="stat-card active">
-            <div class="stat-number">{{ stats.active_projects if stats else 0 }}</div>
-            <div class="stat-label">Active Projects</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ stats.completed_projects if stats else 0 }}</div>
-            <div class="stat-label">Completed</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ stats.on_hold_projects if stats else 0 }}</div>
-            <div class="stat-label">On Hold</div>
-        </div>
-    </div>
-
     <div class="controls">
         <div class="search-bar">
             <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">

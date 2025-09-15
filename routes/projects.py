@@ -3,7 +3,7 @@ from flask import request, flash, render_template, redirect, url_for, session
 from datetime import datetime
 from db import projects_collection as projects_collection
 
-def projects_list():
+def projects_list(template):
     try:
         user_id = session.get('user_id')
         user_projects = projects_collection.find({
@@ -27,7 +27,7 @@ def projects_list():
             'on_hold_projects': on_hold_projects
         }
         
-        return render_template('/main/projects.html', projects=projects, stats = stats)
+        return render_template(f'/main/{template}.html', projects=projects, stats = stats)
         
     except Exception as e:
         print(f"Projects list error: {e}")

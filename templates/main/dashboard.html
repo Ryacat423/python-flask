@@ -8,64 +8,27 @@
 {% block content %}
 
 <div class="header">
-    <h1 class="mb-4">Hello <span style="color: var(--primary-blue);">{{user_name}}</span></h1>
+  <h1>Hello <span style="color: var(--primary-blue);">{{user_name}}</h1>
+  <p>Manage and track all your projects in one place</p>
 </div>
 
-<div class="container">
-  <div class="row mb-4">
-    <div class="col-lg-3 col-md-6 mb-3">
-      <div class="stat-card shadow-sm">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <div class="stat-number">0</div>
-            <div class="stat-label">Ongoing Projects</div>
-          </div>
-          <div class="stat-icon text-primary">
-            <i class="bi bi-users"></i>
-          </div>
-        </div>
-      </div>
+<div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number">{{ stats.total_projects if stats else 0 }}</div>
+      <div class="stat-label">Total Projects</div>
     </div>
-    <div class="col-lg-3 col-md-6 mb-3">
-      <div class="stat-card shadow-sm">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <div class="stat-number">0</div>
-            <div class="stat-label">Ongoing Tasks</div>
-          </div>
-          <div class="stat-icon text-warning">
-            <i class="fas fa-clock"></i>
-          </div>
-        </div>
-      </div>
+    <div class="stat-card active">
+      <div class="stat-number">{{ stats.active_projects if stats else 0 }}</div>
+      <div class="stat-label">Active Projects</div>
     </div>
-    <div class="col-lg-3 col-md-6 mb-3">
-      <div class="stat-card shadow-sm">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <div class="stat-number">0</div>
-            <div class="stat-label">Active Boards</div>
-          </div>
-          <div class="stat-icon text-success">
-            <i class="fas fa-comments"></i>
-          </div>
-        </div>
-      </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ stats.completed_projects if stats else 0 }}</div>
+      <div class="stat-label">Completed</div>
     </div>
-    <div class="col-lg-3 col-md-6 mb-3">
-      <div class="stat-card shadow-sm">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <div class="stat-number">0</div>
-            <div class="stat-label">Active Tasks</div>
-          </div>
-          <div class="stat-icon text-info">
-            <i class="fas fa-file-alt"></i>
-          </div>
-        </div>
-      </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ stats.on_hold_projects if stats else 0 }}</div>
+      <div class="stat-label">On Hold</div>
     </div>
-  </div>
 </div>
 
 {% endblock %}

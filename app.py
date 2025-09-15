@@ -160,14 +160,14 @@ def confirm_email(token):
 @app.route('/dashboard')
 @login_required 
 def dashboard():    
-    return render_template('/main/dashboard.html')
+    return projects_list('dashboard')
 
 # ====== PROJECT ROUTES ======
 
 @app.route('/projects')
 @login_required
 def projects():
-    return projects_list()
+    return projects_list('projects')
 
 @app.route('/projects/create', methods=['GET', 'POST'])
 @login_required
