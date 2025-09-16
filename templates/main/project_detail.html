@@ -12,7 +12,7 @@
             <div class="d-flex align-items-center gap-3 flex-grow-1">
                 <div class="d-flex align-items-center justify-content-center rounded p-2"
                     style="width: clamp(36px, 4vw, 48px); height: clamp(36px, 4vw, 48px); ">
-                <i class="bi bi-list-task" style="font-size: clamp(1.25rem, 2vw, 1.75rem);"></i>
+                <i class="bi bi-folder" style="font-size: clamp(1.25rem, 2vw, 1.75rem);"></i>
                 </div>
                 <div>
                 <h1 class="fw-bold text-dark mb-0"
@@ -43,16 +43,6 @@
         </div>
     </header>
 
-
-    <!-- <div class="kanban-column">
-        <div class="card d-flex align-items-center justify-content-center text-center border-dashed bg-light" 
-            style="width: 250px; height: 100%; min-height: 150px; cursor: pointer;">
-            <div>
-            <i class="bi bi-plus-lg fs-1 text-primary"></i>
-            <p class="mt-2 mb-0 fw-semibold text-muted">Add New Column</p>
-            </div>
-        </div>
-    </div> -->
     <div class="stats-grid mt-3">
         <div class="stat-card">
         <div class="stat-number">{{ stats.total_projects if stats else 0 }}</div>
@@ -71,7 +61,7 @@
         <div class="stat-label">Team Members</div>
         </div>
     </div>
-    {% if not columns %}
+    {% if  columns %}
         <div class="empty-state">
             <div class="empty-state-content">
                 <i class="bi bi-kanban fs-1"></i>
@@ -83,6 +73,56 @@
                 </a>
             </div>
         </div>
+
+    {% else %}
+        <div class="d-flex gap-4 overflow-auto pb-4">
+            <div class="kanban-column bg-white rounded-3 shadow-sm border flex-shrink-0" style="max-width: 20rem;">
+                <div class="column-header text-dark p-3 rounded-top">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="h6 fw-semibold mb-0 d-flex align-items-center gap-2">
+                    <i class="bi bi-list-task"></i>
+                    <span>To Do</span>
+                    </h3>
+                    <span class="badge bg-light bg-opacity-25 text-white fw-medium px-2 py-1">4</span>
+                </div>
+                </div>
+                <div class="p-3 d-flex flex-column gap-3" style="min-height: 24rem;">
+                <div class="task-card border rounded p-3 bg-white cursor-pointer" draggable="true">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h4 class="h6 fw-semibold text-dark mb-0">Design System Update</h4>
+                    <span class="badge bg-danger bg-opacity-10 text-danger fw-medium">High</span>
+                    </div>
+                    <p class="text-muted small mb-3">
+                    Update the design system components to match new brand guidelines
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white small" style="width: 24px; height: 24px;">JD</div>
+                        <span class="small text-muted">John Doe</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-1 small text-muted">
+                        <i class="bi bi-calendar"></i>
+                        <span>Dec 15</span>
+                    </div>
+                    </div>
+                </div>
+                <button class="btn w-100 border border-2 border-dashed text-muted d-flex justify-content-center align-items-center gap-2 py-3 bg-white rounded transition">
+                    <i class="bi bi-plus"></i>
+                    <span>Add new task</span>
+                </button>
+                </div>
+            </div>
+            <div class="kanban-column">
+                <div class="card d-flex align-items-center justify-content-center text-center border-dashed bg-light" 
+                    style="width: 250px; height: 100%; min-height: 150px; cursor: pointer;">
+                    <div>
+                    <i class="bi bi-plus-lg fs-1 text-primary"></i>
+                    <p class="mt-2 mb-0 fw-semibold text-muted">Add New Column</p>
+                    </div>
+                </div>
+            </div>
+            </div>
+
     {% endif %}
 {% endblock %}
 
