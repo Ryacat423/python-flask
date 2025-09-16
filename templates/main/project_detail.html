@@ -6,13 +6,69 @@
 {% endblock %}
 
 {% block content %}
-    <div class="header">
-        <div class="label">Project name:</div>
-        <h1>{{project.project_name}}</h1>
-                <div class="label">Project description:</div>
-        <p>{{project.description}}</p>
-    </div>
+    <header class="bg-white border-bottom shadow-sm">
+    <div class="container py-3">
+        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center justify-content-center bg-gradient rounded p-2" 
+                style="width: 40px; height: 40px; background: linear-gradient(to right, #3b82f6, #9333ea);">
+                <i class="bi bi-list-task fs-3"></i>
+            </div>
+            <div>
+            <h1 class="h4 mb-0 fw-bold text-dark">{{project.project_name}}</h1>
+            <p class="small text-muted mb-0">{{project.description}}</p>
+            </div>
+        </div>
+        
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-primary d-flex align-items-center gap-2">
+                <i class="bi bi-plus"></i>
+                <span>New Task</span>
+            </button>
 
+            <button class="btn btn-primary d-flex align-items-center gap-2">
+                <i class="bi bi-eye"></i>
+                <span>View Members</span>
+            </button>
+            <!-- <div class="d-flex">
+            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-semibold me-n2" 
+                style="width: 32px; height: 32px; font-size: 0.75rem;">JD</div>
+            <div class="rounded-circle bg-success d-flex align-items-center justify-content-center text-white fw-semibold me-n2" 
+                style="width: 32px; height: 32px; font-size: 0.75rem;">SM</div>
+            <div class="rounded-circle bg-warning d-flex align-items-center justify-content-center text-white fw-semibold me-n2" 
+                style="width: 32px; height: 32px; font-size: 0.75rem;">AL</div>
+            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-secondary fw-semibold" 
+                style="width: 32px; height: 32px; font-size: 0.75rem;">+3</div>
+            </div> -->
+        </div>
+
+        </div>
+    </div>
+    </header>
+
+    <!-- <div class="kanban-column">
+        <div class="card d-flex align-items-center justify-content-center text-center border-dashed bg-light" 
+            style="width: 250px; height: 100%; min-height: 150px; cursor: pointer;">
+            <div>
+            <i class="bi bi-plus-lg fs-1 text-primary"></i>
+            <p class="mt-2 mb-0 fw-semibold text-muted">Add New Column</p>
+            </div>
+        </div>
+    </div> -->
+
+    {% if not columns %}
+        <div class="empty-state">
+            <div class="empty-state-content">
+                <i class="bi bi-kanban fs-1"></i>
+                <h3>No Columns Yet</h3>
+                <p>Add a new column to start productivity</p>
+                <a href="{{ url_for('create_project') }}" class="btn btn-primary">
+                    <i class="bi bi-plus"></i>
+                    Add Column
+                </a>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}
 
 
