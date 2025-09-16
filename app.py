@@ -104,34 +104,16 @@ def authorize_google():
 
 @app.route('/confirm/<token>')
 def confirm_email(token):
-    print("=" * 60)
-    print(f"🔍 CONFIRMATION ROUTE ACCESSED")
-    print(f"Token received: {token}")
-    print(f"Token length: {len(token)}")
-    print("=" * 60)
-    
     try:
         email = confirm_token(token)
         if not email:
-            print("❌ Token validation failed")
-            flash('The confirmation link is invalid or expired.', 'error')
             return redirect(url_for('login'))
             
-        print(f"✅ Token validated for email: {email}")
-        
     except Exception as e:
-        print(f"❌ Exception during token confirmation: {e}")
-        flash('The confirmation link is invalid or expired.', 'error')
         return redirect(url_for('login'))
-
-    # Find and update user
-    print(f"🔍 Looking for user with email: {email}")
     user = users.find_one({'email': email})
     
-    if user:
-        print(f"✅ User found: {user.get('email')}")
-        print(f"Current verification status: {user.get('email_verified', False)}")
-        
+    if user:        
         if not user.get('email_verified', False):
             result = users.update_one(
                 {'email': email}, 
@@ -139,16 +121,12 @@ def confirm_email(token):
             )
             
             if result.modified_count > 0:
-                print("✅ Email verification updated successfully")
                 flash('Email confirmed successfully! You can now log in.', 'success')
             else:
-                print("❌ Failed to update email verification")
                 flash('Error confirming email. Please try again.', 'error')
         else:
-            print("ℹ️ Email already verified")
             flash('Account already confirmed. Please log in.', 'info')
     else:
-        print("❌ User not found in database")
         flash('User not found.', 'error')
 
     print("🔄 Redirecting to login page")
@@ -210,5 +188,5 @@ def inject_user():
     )
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)
 
