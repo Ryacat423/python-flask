@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from routes.auth import auth_register, auth_login, auth_logout
 from routes.projects import *
+
 from utils.token import confirm_token
 from utils.decorators import login_required
+from utils.socket import init_socketio, get_socketio  
 
 from authlib.integrations.flask_client import OAuth
 from instance.api_key import *
@@ -12,6 +14,8 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
+
+socketio = init_socketio(app)
 
 oauth = OAuth(app)
 
@@ -168,6 +172,16 @@ def add_member_to_project(project_id):
 def create_column(project_id):
     return column_create(project_id)
 
+@app.route('/projects/<project_id>/tasks/create', methods=['POST'])
+@login_required
+def create_task(project_id):
+    return task_create(project_id)
+
+@app.route('/projects/<project_id>/tasks/move', methods=['POST'])
+@login_required
+def move_task(project_id):
+    return task_move(project_id)
+
 
 # ====== END OF PROJECT ROUTES ======
 
@@ -194,5 +208,4 @@ def inject_user():
     )
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True)
-
+    socketio.run(app, host='0.0.0.0', debug=True, port=5000)
