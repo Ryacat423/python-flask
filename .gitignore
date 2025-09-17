@@ -35,7 +35,7 @@ db.sqlite3
 .DS_Store
 Thumbs.db
 
-util/oauth.py
+utils/socket.py
 
 /static/
 /notes.txt
