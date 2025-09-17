@@ -9,3 +9,5 @@ projects_collection = db["projects"]
 
 column_collection = db["columns"]
 column_collection.create_index([("project", 1), ("order", 1)])
+
+tasks_collection = db["tasks"]
