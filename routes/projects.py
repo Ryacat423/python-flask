@@ -1,6 +1,10 @@
 from db import projects_collection as projects_collection
 from db import column_collection as column_collection
-from flask import request, flash, render_template, redirect, url_for, session
+from db import tasks_collection as tasks_collection
+
+from utils.socket import broadcast_to_project, get_socketio
+
+from flask import request, flash, render_template, redirect, url_for, session, jsonify
 
 from bson import ObjectId
 from datetime import datetime
@@ -102,16 +106,46 @@ def project_view(project_id):
         if not project:
             flash('Project not found or you do not have access to it.', 'error')
             return redirect(url_for('projects'))
-
-        columns = list(column_collection.find({
-            'project': ObjectId(project_id)
-        }).sort('order', 1))
-
+        
+        # Fetch columns for this project with task counts
+        columns_pipeline = [
+            {'$match': {'project': ObjectId(project_id)}},
+            {'$lookup': {
+                'from': 'tasks',
+                'localField': '_id',
+                'foreignField': 'column_id',
+                'as': 'tasks'
+            }},
+            {'$addFields': {
+                'task_count': {'$size': '$tasks'}
+            }},
+            {'$sort': {'order': 1}}
+        ]
+        
+        columns = list(column_collection.aggregate(columns_pipeline))
+        
+        # Calculate project stats
+        total_tasks = sum(col.get('task_count', 0) for col in columns)
+        
+        # Get task statistics
+        task_stats = {}
+        if columns:
+            task_pipeline = [
+                {'$match': {'project_id': ObjectId(project_id)}},
+                {'$group': {
+                    '_id': '$status',
+                    'count': {'$sum': 1}
+                }}
+            ]
+            task_stats_result = list(tasks_collection.aggregate(task_pipeline))
+            for stat in task_stats_result:
+                task_stats[stat['_id']] = stat['count']
+        
         stats = {
-            'total_projects': len(columns),
-            'active_projects': 0,
-            'completed_projects': 0,
-            'on_hold_projects': 0,
+            'total_projects': total_tasks,
+            'active_projects': task_stats.get('in_progress', 0),
+            'completed_projects': task_stats.get('completed', 0),
+            'on_hold_projects': len(project.get('members', [])),
         }
         
         return render_template('/main/project_detail.html', 
@@ -123,7 +157,6 @@ def project_view(project_id):
         print(f"Project view error: {e}")
         flash('An error occurred while loading the project.', 'error')
         return redirect(url_for('projects'))
-
 
 def project_add_member(project_id):
     try:
@@ -182,6 +215,7 @@ def column_create(project_id):
     try:
         if request.method == 'POST':
             label = request.form['label'].strip()
+            color = request.form.get('color', 'light-blue').strip()
             user_id = session.get('user_id')
 
             project = projects_collection.find_one({
@@ -195,7 +229,7 @@ def column_create(project_id):
             if not project:
                 flash('Project not found or you do not have access to it.', 'error')
                 return redirect(url_for('projects'))
-            
+
             existing_column = column_collection.find_one({
                 'project': ObjectId(project_id),
                 'label': {'$regex': f'^{label}$', '$options': 'i'}
@@ -204,26 +238,252 @@ def column_create(project_id):
             if existing_column:
                 flash('A column with this name already exists in this project.', 'error')
                 return redirect(url_for('view_project', project_id=project_id))
+            
+            last_column = column_collection.find_one(
+                {'project': ObjectId(project_id)},
+                sort=[('order', -1)]
+            )
+            next_order = (last_column.get('order', -1) + 1) if last_column else 0
                         
             column_data = {
                 'label': label,
+                'color': color,
                 'project': ObjectId(project_id),
                 'created_at': datetime.now(),
                 'created_by': user_id,
-                'order': 0 
+                'order': next_order
             }
 
             result = column_collection.insert_one(column_data)
             if result.inserted_id:
+                socketio = get_socketio()
+                if socketio:
+                    column_data_broadcast = {
+                        '_id': str(result.inserted_id),
+                        'label': label,
+                        'color': color,
+                        'order': next_order,
+                        'task_count': 0
+                    }
+                    
+                    broadcast_to_project(
+                        project_id,
+                        'column_created',
+                        {
+                            'type': 'column_create',
+                            'column': column_data_broadcast,
+                            'userId': user_id,
+                            'userName': session.get('name', 'Anonymous User'),
+                            'timestamp': datetime.now().isoformat()
+                        }
+                    )
+                
                 flash('Column created successfully!', 'success')
                 return redirect(url_for('view_project', project_id=project_id))
             else:
                 flash('Failed to create column. Please try again.', 'error')
                 return redirect(url_for('view_project', project_id=project_id))
-
+        
         return redirect(url_for('view_project', project_id=project_id))
         
     except Exception as e:
         print(f"Column creation error: {e}")
         flash('An error occurred while creating the column.', 'error')
         return redirect(url_for('view_project', project_id=project_id))
+
+def task_create(project_id):
+    try:
+        if request.method == 'POST':
+            title = request.form['title'].strip()
+            description = request.form.get('description', '').strip()
+            task_type = request.form.get('type', 'task').strip()
+            priority = request.form.get('priority', 'medium').strip()
+            due_date_str = request.form.get('due_date', '').strip()
+            column_id = request.form['column_id'].strip()
+            labels_str = request.form.get('labels', '').strip()
+            user_id = session.get('user_id')
+
+            if not title:
+                flash('Task title is required!', 'error')
+                return redirect(url_for('view_project', project_id=project_id))
+                
+            if not column_id:
+                flash('Column selection is required!', 'error')
+                return redirect(url_for('view_project', project_id=project_id))
+
+            project = projects_collection.find_one({
+                '_id': ObjectId(project_id),
+                '$or': [
+                    {'user_id': user_id},
+                    {'members': user_id}
+                ]
+            })
+            
+            if not project:
+                flash('Project not found or you do not have access to it.', 'error')
+                return redirect(url_for('projects'))
+
+            column = column_collection.find_one({
+                '_id': ObjectId(column_id),
+                'project': ObjectId(project_id)
+            })
+            
+            if not column:
+                flash('Invalid column selected.', 'error')
+                return redirect(url_for('view_project', project_id=project_id))
+
+            due_date = None
+            if due_date_str:
+                try:
+                    due_date = datetime.strptime(due_date_str, '%Y-%m-%d')
+                except ValueError:
+                    flash('Invalid due date format.', 'error')
+                    return redirect(url_for('view_project', project_id=project_id))
+
+            labels = []
+            if labels_str:
+                labels = [label.strip() for label in labels_str.split(',') if label.strip()]
+
+            from db import users_collection
+            user_info = users_collection.find_one({'_id': ObjectId(user_id)})
+            assignee_name = f"{user_info.get('firstname', '')} {user_info.get('lastname', '')}".strip()
+            assignee_initials = ''.join([name[0].upper() for name in assignee_name.split() if name])[:2]
+
+            last_task = tasks_collection.find_one(
+                {'column_id': ObjectId(column_id)},
+                sort=[('order', -1)]
+            )
+            next_order = (last_task.get('order', -1) + 1) if last_task else 0
+            
+            task_data = {
+                'title': title,
+                'description': description,
+                'type': task_type,
+                'priority': priority,
+                'due_date': due_date,
+                'labels': labels,
+                'column_id': ObjectId(column_id),
+                'project_id': ObjectId(project_id),
+                'created_by': user_id,
+                'assigned_to': user_id,
+                'assignee_name': assignee_name,
+                'assignee_initials': assignee_initials,
+                'status': 'todo',
+                'created_at': datetime.now(),
+                'updated_at': datetime.now(),
+                'order': next_order
+            }
+            
+            result = tasks_collection.insert_one(task_data)
+            
+            if result.inserted_id:
+                socketio = get_socketio()
+                if socketio:
+                    task_data_broadcast = {
+                        '_id': str(result.inserted_id),
+                        'title': title,
+                        'description': description,
+                        'type': task_type,
+                        'priority': priority,
+                        'due_date': due_date.isoformat() if due_date else None,
+                        'labels': labels,
+                        'assignee_name': assignee_name,
+                        'assignee_initials': assignee_initials
+                    }
+                    
+                    broadcast_to_project(
+                        project_id,
+                        'task_created',
+                        {
+                            'type': 'task_create',
+                            'task': task_data_broadcast,
+                            'columnId': column_id,
+                            'userId': user_id,
+                            'userName': session.get('name', 'Anonymous User'),
+                            'timestamp': datetime.now().isoformat()
+                        }
+                    )
+                
+                flash('Task created successfully!', 'success')
+                return redirect(url_for('view_project', project_id=project_id))
+            else:
+                flash('Failed to create task. Please try again.', 'error')
+                return redirect(url_for('view_project', project_id=project_id))
+        
+        return redirect(url_for('view_project', project_id=project_id))
+        
+    except Exception as e:
+        print(f"Task creation error: {e}")
+        flash('An error occurred while creating the task.', 'error')
+        return redirect(url_for('view_project', project_id=project_id))
+
+def task_move(project_id):
+    try:
+        data = request.get_json()
+        task_id = data.get('taskId')
+        source_column_id = data.get('sourceColumnId')
+        target_column_id = data.get('targetColumnId')
+        user_id = session.get('user_id')
+        
+        project = projects_collection.find_one({
+            '_id': ObjectId(project_id),
+            '$or': [
+                {'user_id': user_id},
+                {'members': user_id}
+            ]
+        })
+        
+        if not project:
+            return jsonify({'success': False, 'message': 'Access denied'}), 403
+        
+        task = tasks_collection.find_one({
+            '_id': ObjectId(task_id),
+            'project_id': ObjectId(project_id)
+        })
+        
+        if not task:
+            return jsonify({'success': False, 'message': 'Task not found'}), 404
+
+        source_column = column_collection.find_one({
+            '_id': ObjectId(source_column_id),
+            'project': ObjectId(project_id)
+        })
+        
+        target_column = column_collection.find_one({
+            '_id': ObjectId(target_column_id),
+            'project': ObjectId(project_id)
+        })
+        
+        if not source_column or not target_column:
+            return jsonify({'success': False, 'message': 'Invalid columns'}), 400
+
+        last_task = tasks_collection.find_one(
+            {'column_id': ObjectId(target_column_id)},
+            sort=[('order', -1)]
+        )
+        next_order = (last_task.get('order', -1) + 1) if last_task else 0
+        update_result = tasks_collection.update_one(
+            {'_id': ObjectId(task_id)},
+            {
+                '$set': {
+                    'column_id': ObjectId(target_column_id),
+                    'updated_at': datetime.now(),
+                    'order': next_order
+                }
+            }
+        )
+        
+        if update_result.modified_count > 0:
+            return jsonify({
+                'success': True,
+                'message': 'Task moved successfully',
+                'task_id': task_id,
+                'source_column_id': source_column_id,
+                'target_column_id': target_column_id
+            })
+        else:
+            return jsonify({'success': False, 'message': 'Failed to update task'}), 500
+            
+    except Exception as e:
+        print(f"Task move error: {e}")
+        return jsonify({'success': False, 'message': 'Internal server error'}), 500
