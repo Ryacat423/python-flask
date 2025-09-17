@@ -6,3 +6,5 @@ db = client["kanban_app"]
 
 users_collection = db["users"]
 projects_collection = db["projects"]
+
+column_collection = db["columns"]

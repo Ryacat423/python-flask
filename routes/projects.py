@@ -1,4 +1,5 @@
 from db import projects_collection as projects_collection
+from db import column_collection as column_collection
 from flask import request, flash, render_template, redirect, url_for, session
 
 from bson import ObjectId
@@ -156,6 +157,28 @@ def project_add_member(project_id):
                 return render_template('/main/add_member.html', project=project)
         
         return render_template('/main/add_member.html', project=project)
+        
+    except Exception as e:
+        print(f"Add member error: {e}")
+        flash('An error occurred while adding the member.', 'error')
+        return redirect(url_for('projects'))
+    
+def column_create(project_id):        
+    try:
+        if request.method == 'POST':
+            label = request.form['label'].strip().lower()
+                        
+            column_data = {
+                'label': label,
+                'project': ObjectId(project_id),
+            }
+
+            result = column_collection.insert_one(column_data)
+            if result.inserted_id:
+                flash('Column created successfully!', 'success')
+                return redirect(url_for('project_view', project_id = project_id))
+        
+        return render_template(url_for('view_project', project_id = project_id))
         
     except Exception as e:
         print(f"Add member error: {e}")

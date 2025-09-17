@@ -152,7 +152,7 @@ def projects():
 def create_project():
     return project_create()
 
-@app.route('/projects/<project_id>')
+@app.route('/projects/<project_id>', methods=['GET'])
 @login_required
 def view_project(project_id):
     return project_view(project_id)
@@ -162,6 +162,12 @@ def view_project(project_id):
 @login_required
 def add_member_to_project(project_id):
     return project_add_member(project_id)
+
+@app.route('/projects/<project_id>/columns/create', methods=['POST'])
+@login_required
+def create_column(project_id):
+    return column_create(project_id)
+
 
 # ====== END OF PROJECT ROUTES ======
 
