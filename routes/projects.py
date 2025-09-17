@@ -102,13 +102,28 @@ def project_view(project_id):
         if not project:
             flash('Project not found or you do not have access to it.', 'error')
             return redirect(url_for('projects'))
+
+        columns = list(column_collection.find({
+            'project': ObjectId(project_id)
+        }).sort('order', 1))
+
+        stats = {
+            'total_projects': len(columns),
+            'active_projects': 0,
+            'completed_projects': 0,
+            'on_hold_projects': 0,
+        }
         
-        return render_template('/main/project_detail.html', project=project)
+        return render_template('/main/project_detail.html', 
+                             project=project, 
+                             columns=columns,
+                             stats=stats)
         
     except Exception as e:
         print(f"Project view error: {e}")
         flash('An error occurred while loading the project.', 'error')
         return redirect(url_for('projects'))
+
 
 def project_add_member(project_id):
     try:
@@ -166,21 +181,49 @@ def project_add_member(project_id):
 def column_create(project_id):        
     try:
         if request.method == 'POST':
-            label = request.form['label'].strip().lower()
+            label = request.form['label'].strip()
+            user_id = session.get('user_id')
+
+            project = projects_collection.find_one({
+                '_id': ObjectId(project_id),
+                '$or': [
+                    {'user_id': user_id},
+                    {'members': user_id}
+                ]
+            })
+            
+            if not project:
+                flash('Project not found or you do not have access to it.', 'error')
+                return redirect(url_for('projects'))
+            
+            existing_column = column_collection.find_one({
+                'project': ObjectId(project_id),
+                'label': {'$regex': f'^{label}$', '$options': 'i'}
+            })
+            
+            if existing_column:
+                flash('A column with this name already exists in this project.', 'error')
+                return redirect(url_for('view_project', project_id=project_id))
                         
             column_data = {
                 'label': label,
                 'project': ObjectId(project_id),
+                'created_at': datetime.now(),
+                'created_by': user_id,
+                'order': 0 
             }
 
             result = column_collection.insert_one(column_data)
             if result.inserted_id:
                 flash('Column created successfully!', 'success')
-                return redirect(url_for('project_view', project_id = project_id))
-        
-        return render_template(url_for('view_project', project_id = project_id))
+                return redirect(url_for('view_project', project_id=project_id))
+            else:
+                flash('Failed to create column. Please try again.', 'error')
+                return redirect(url_for('view_project', project_id=project_id))
+
+        return redirect(url_for('view_project', project_id=project_id))
         
     except Exception as e:
-        print(f"Add member error: {e}")
-        flash('An error occurred while adding the member.', 'error')
-        return redirect(url_for('projects'))
+        print(f"Column creation error: {e}")
+        flash('An error occurred while creating the column.', 'error')
+        return redirect(url_for('view_project', project_id=project_id))
