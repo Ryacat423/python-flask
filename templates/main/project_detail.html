@@ -7,60 +7,67 @@
 {% endblock %}
 
 {% block content %}
+    <div id="wsIndicator" class="ws-indicator ws-disconnected" style="display: none;">
+        <i class="bi bi-wifi-off me-1"></i> Disconnected
+    </div>
+
     <header class="bg-white border-bottom shadow-sm">
         <div class="container py-3">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-            <div class="d-flex align-items-center gap-3 flex-grow-1">
-                <div class="d-flex align-items-center justify-content-center rounded p-2"
-                    style="width: clamp(36px, 4vw, 48px); height: clamp(36px, 4vw, 48px); ">
-                <i class="bi bi-folder" style="font-size: clamp(1.25rem, 2vw, 1.75rem);"></i>
+                <div class="d-flex align-items-center gap-3 flex-grow-1">
+                    <div class="d-flex align-items-center justify-content-center rounded p-2"
+                        style="width: clamp(36px, 4vw, 48px); height: clamp(36px, 4vw, 48px);">
+                        <i class="bi bi-folder" style="font-size: clamp(1.25rem, 2vw, 1.75rem);"></i>
+                    </div>
+                    <div>
+                        <h1 class="fw-bold text-dark mb-0"
+                            style="font-size: clamp(1.25rem, 2.5vw, 1.75rem);">
+                            {{ project.project_name }}
+                        </h1>
+                        <p class="text-muted mb-0"
+                            style="font-size: clamp(0.75rem, 1.5vw, 0.875rem);">
+                            {{ project.description }}
+                        </p>
+                    </div>
                 </div>
-                <div>
-                <h1 class="fw-bold text-dark mb-0"
-                    style="font-size: clamp(1.25rem, 2.5vw, 1.75rem);">
-                    {{ project.project_name }}
-                </h1>
-                <p class="text-muted mb-0"
-                    style="font-size: clamp(0.75rem, 1.5vw, 0.875rem);">
-                    {{ project.description }}
-                </p>
-                </div>
-            </div>
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-                <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2"
-                        style="font-size: clamp(0.75rem, 1.6vw, 0.875rem);">
-                <i class="bi bi-plus"></i>
-                <span>New Task</span>
-                </button>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2"
+                            style="font-size: clamp(0.75rem, 1.6vw, 0.875rem);"
+                            data-bs-toggle="modal" 
+                            data-bs-target="#addTaskModal">
+                        <i class="bi bi-plus"></i>
+                        <span>New Task</span>
+                    </button>
 
-                <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2"
-                        style="font-size: clamp(0.75rem, 1.6vw, 0.875rem);">
-                <i class="bi bi-eye"></i>
-                <span>View Members</span>
-                </button>
-            </div>
+                    <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2"
+                            style="font-size: clamp(0.75rem, 1.6vw, 0.875rem);">
+                        <i class="bi bi-eye"></i>
+                        <span>View Members</span>
+                    </button>
+                </div>
             </div>
         </div>
     </header>
 
     <div class="stats-grid mt-3">
         <div class="stat-card">
-        <div class="stat-number">{{ stats.total_projects if stats else 0 }}</div>
-        <div class="stat-label">Total Tasks</div>
+            <div class="stat-number">{{ stats.total_projects if stats else 0 }}</div>
+            <div class="stat-label">Total Tasks</div>
         </div>
         <div class="stat-card active">
-        <div class="stat-number">{{ stats.active_projects if stats else 0 }}</div>
-        <div class="stat-label">In progress</div>
+            <div class="stat-number">{{ stats.active_projects if stats else 0 }}</div>
+            <div class="stat-label">In progress</div>
         </div>
         <div class="stat-card">
-        <div class="stat-number">{{ stats.completed_projects if stats else 0 }}</div>
-        <div class="stat-label">Completed</div>
+            <div class="stat-number">{{ stats.completed_projects if stats else 0 }}</div>
+            <div class="stat-label">Completed</div>
         </div>
         <div class="stat-card">
-        <div class="stat-number">{{ stats.on_hold_projects if stats else 0 }}</div>
-        <div class="stat-label">Team Members</div>
+            <div class="stat-number">{{ stats.on_hold_projects if stats else 0 }}</div>
+            <div class="stat-label">Team Members</div>
         </div>
     </div>
+    
     
     {% if not columns %}
         <div class="empty-state">
@@ -71,141 +78,270 @@
                 <button 
                     class="btn btn-primary"
                     data-bs-toggle="modal" 
-                    data-bs-target="#addColumnModal"
-                >
+                    data-bs-target="#addColumnModal">
                     <i class="bi bi-plus"></i>
                     Add Column
                 </button>
             </div>
         </div>
-
-        <!-- Modal for adding new column -->
-        <div class="modal fade" id="addColumnModal" tabindex="-1" aria-labelledby="addColumnModalLabel" aria-hidden="true" data-bs-backdrop="static">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addColumnModalLabel">
-                            <i class="bi bi-columns"></i> Add New Column
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    {% else %}
+        <div class="kanban-board mt-4 " id="kanbanBoard">
+            {% for column in columns %}
+            <div class="kanban-column bg-white rounded-3 shadow-sm border" 
+                 data-column-id="{{ column._id }}"
+                 data-column-color="{{ column.color if column.color else 'light-blue' }}">
+                <div class="column-header p-3 rounded-top color-{{ column.color if column.color else 'light-blue' }}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="h6 fw-semibold mb-0 d-flex align-items-center gap-2">
+                            <i class="bi bi-list-task"></i>
+                            <span>{{ column.label }}</span>
+                        </h3>
+                        <span class="badge bg-white bg-opacity-75 text-dark fw-medium px-2 py-1">
+                            {{ column.tasks|length if column.tasks else 0 }}
+                        </span>
                     </div>
-                    <form method="POST" action="{{url_for('create_column', project_id=project._id)}}">
-                        <div class="modal-body">
-                            <div class="mb-4">
-                                <label for="columnHeader" class="form-label">
-                                    <i class="bi bi-card-heading me-2 text-primary"></i>Column Header
-                                </label>
-                                <div class="input-group">
-                                    <input type="text" 
-                                        class="form-control" 
-                                        id="columnHeader" 
-                                        name="label"
-                                        placeholder="e.g., To Do, In Progress, Done..."
-                                        maxlength="50"
-                                        required>
-                                    <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                </div>
+                <div class="p-3 d-flex flex-column gap-3 column-content" 
+                     style="min-height: 24rem;"
+                     data-column-id="{{ column._id }}"
+                     ondrop="handleDrop(event)" 
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)">
+
+                    {% if column.tasks %}
+                        {% for task in column.tasks %}
+                        <div class="task-card border rounded p-3 bg-white" 
+                             draggable="true"
+                             data-task-id="{{ task._id }}"
+                             ondragstart="handleDragStart(event)"
+                             ondragend="handleDragEnd(event)">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h4 class="h6 fw-semibold text-dark mb-0">{{ task.title }}</h4>
+                                <span class="badge priority-{{ task.priority if task.priority else 'medium' }} text-white fw-medium">
+                                    {{ task.priority.title() if task.priority else 'Medium' }}
+                                </span>
+                            </div>
+                            {% if task.description %}
+                            <p class="text-muted small mb-2">{{ task.description }}</p>
+                            {% endif %}
+                            <div class="mb-2">
+                                <span class="badge type-{{ task.type if task.type else 'task' }} text-white me-1">
+                                    {{ task.type.title() if task.type else 'Task' }}
+                                </span>
+                                {% if task.labels %}
+                                    {% for label in task.labels %}
+                                    <span class="label-chip bg-info text-white">{{ label }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white small" 
+                                         style="width: 24px; height: 24px;">
+                                        {{ task.assignee_initials if task.assignee_initials else 'U' }}
+                                    </div>
+                                    <span class="small text-muted">{{ task.assignee_name if task.assignee_name else 'Unassigned' }}</span>
                                 </div>
-                                <small class="form-text text-muted mt-2">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Choose a clear, descriptive name for your column
-                                </small>
+                                {% if task.due_date %}
+                                <div class="d-flex align-items-center gap-1 small text-muted">
+                                    <i class="bi bi-calendar"></i>
+                                    <span>{{ task.due_date.strftime('%b %d') }}</span>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                <i class="bi bi-x me-2"></i>Cancel
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-plus me-2"></i>Create Column
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    {% else %}
-        <div class="d-flex gap-4 overflow-auto pb-4">
-            <!-- Display existing columns -->
-            {% for column in columns %}
-            <div class="kanban-column bg-white rounded-3 shadow-sm border flex-shrink-0" style="min-width: 20rem;">
-                <div class="column-header text-dark p-3 rounded-top">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h3 class="h6 fw-semibold mb-0 d-flex align-items-center gap-2">
-                    <i class="bi bi-list-task"></i>
-                    <span>{{ column.label }}</span>
-                    </h3>
-                    <span class="badge bg-light bg-opacity-25 text-dark fw-medium px-2 py-1">0</span>
-                </div>
-                </div>
-                <div class="p-3 d-flex flex-column gap-3" style="min-height: 24rem;">
+                        {% endfor %}
+                    {% endif %}
 
-                    <button class="btn w-100 border border-2 border-dashed text-muted d-flex justify-content-center align-items-center gap-2 py-3 bg-white rounded transition">
+                    <button class="btn w-100 border border-2 border-dashed text-muted d-flex justify-content-center align-items-center gap-2 py-3 bg-white rounded transition"
+                            data-bs-toggle="modal" 
+                            data-bs-target="#addTaskModal"
+                            data-column-id="{{ column._id }}">
                         <i class="bi bi-plus"></i>
                         <span>Add new task</span>
                     </button>
                 </div>
             </div>
             {% endfor %}
-            
+
             <div class="kanban-column">
                 <div class="card d-flex align-items-center justify-content-center text-center border-dashed bg-light" 
-                    style="width: 250px; height: 100%; min-height: 150px; cursor: pointer;"
-                    data-bs-toggle="modal" 
-                    data-bs-target="#addColumnModal">
+                     style="width: 100%; height: 100%; min-height: 150px; cursor: pointer;"
+                     data-bs-toggle="modal" 
+                     data-bs-target="#addColumnModal">
                     <div>
-                    <i class="bi bi-plus-lg fs-1 text-primary"></i>
-                    <p class="mt-2 mb-0 fw-semibold text-muted">Add New Column</p>
+                        <i class="bi bi-plus-lg fs-1 text-primary"></i>
+                        <p class="mt-2 mb-0 fw-semibold text-muted">Add New Column</p>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal fade" id="addColumnModal" tabindex="-1" aria-labelledby="addColumnModalLabel" aria-hidden="true" data-bs-backdrop="static">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addColumnModalLabel">
-                            <i class="bi bi-columns"></i> Add New Column
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form method="POST" action="{{url_for('create_column', project_id=project._id)}}">
-                        <div class="modal-body">
-                            <div class="mb-4">
-                                <label for="columnHeader" class="form-label">
-                                    <i class="bi bi-card-heading me-2 text-primary"></i>Column Header
-                                </label>
-                                <div class="input-group">
-                                    <input type="text" 
-                                        class="form-control" 
-                                        id="columnHeader" 
-                                        name="label"
-                                        placeholder="e.g., To Do, In Progress, Done..."
-                                        maxlength="50"
-                                        required>
-                                    <span class="input-group-text"><i class="bi bi-tag"></i></span>
-                                </div>
-                                <small class="form-text text-muted mt-2">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Choose a clear, descriptive name for your column
-                                </small>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                <i class="bi bi-x me-2"></i>Cancel
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-plus me-2"></i>Create Column
-                            </button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>
     {% endif %}
+
+    <div class="modal fade" id="addColumnModal" tabindex="-1" aria-labelledby="addColumnModalLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addColumnModalLabel">
+                        <i class="bi bi-columns"></i> Add New Column
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{{url_for('create_column', project_id=project._id)}}">
+                    <div class="modal-body">
+                        <div class="mb-4">
+                            <label for="columnHeader" class="form-label">
+                                <i class="bi bi-card-heading me-2 text-primary"></i>Column Header
+                            </label>
+                            <div class="input-group">
+                                <input type="text" 
+                                    class="form-control" 
+                                    id="columnHeader" 
+                                    name="label"
+                                    placeholder="e.g., To Do, In Progress, Done..."
+                                    maxlength="50"
+                                    required>
+                                <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                            </div>
+                            <small class="form-text text-muted mt-2">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Choose a clear, descriptive name for your column
+                            </small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="bi bi-palette me-2 text-primary"></i>Column Color
+                            </label>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% set colors = ['light-blue', 'light-green', 'light-purple', 'light-orange', 'light-pink', 'light-yellow', 'light-cyan', 'light-gray'] %}
+                                {% for color in colors %}
+                                    {% set color_id = color.replace('light-', '') %}
+                                    <input type="radio" name="color" value="{{ color }}" id="color-{{ color_id }}" class="d-none" {% if loop.first %}checked{% endif %}>
+                                    <label for="color-{{ color_id }}" class="color-option color-{{ color }} {% if loop.first %}selected{% endif %}" data-color="{{ color }}"></label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x me-2"></i>Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus me-2"></i>Create Column
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addTaskModalLabel">
+                        <i class="bi bi-plus-circle"></i> Create New Task
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{{url_for('create_task', project_id=project._id)}}">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="taskTitle" class="form-label">
+                                        <i class="bi bi-card-text me-2 text-primary"></i>Task Title *
+                                    </label>
+                                    <input type="text" class="form-control" id="taskTitle" name="title" 
+                                           placeholder="Enter task title..." maxlength="100" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="taskDescription" class="form-label">
+                                        <i class="bi bi-file-text me-2 text-primary"></i>Description
+                                    </label>
+                                    <textarea class="form-control" id="taskDescription" name="description" 
+                                              rows="3" placeholder="Describe the task..."></textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="taskType" class="form-label">
+                                        <i class="bi bi-tag me-2 text-primary"></i>Type
+                                    </label>
+                                    <select class="form-select" id="taskType" name="type">
+                                        <option value="task">Task</option>
+                                        <option value="bug">Bug</option>
+                                        <option value="feature">Feature</option>
+                                        <option value="improvement">Improvement</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="taskPriority" class="form-label">
+                                        <i class="bi bi-exclamation-triangle me-2 text-primary"></i>Priority
+                                    </label>
+                                    <select class="form-select" id="taskPriority" name="priority">
+                                        <option value="low">Low</option>
+                                        <option value="medium" selected>Medium</option>
+                                        <option value="high">High</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="taskDueDate" class="form-label">
+                                        <i class="bi bi-calendar me-2 text-primary"></i>Due Date
+                                    </label>
+                                    <input type="date" class="form-control" id="taskDueDate" name="due_date">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="taskColumn" class="form-label">
+                                        <i class="bi bi-columns me-2 text-primary"></i>Column *
+                                    </label>
+                                    <select class="form-select" id="taskColumn" name="column_id" required>
+                                        {% for column in columns %}
+                                        <option value="{{ column._id }}">{{ column.label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="taskLabels" class="form-label">
+                                <i class="bi bi-tags me-2 text-primary"></i>Labels
+                            </label>
+                            <input type="text" class="form-control" id="taskLabels" name="labels" 
+                                   placeholder="Enter labels separated by commas (e.g., frontend, urgent, review)">
+                            <small class="form-text text-muted">Separate multiple labels with commas</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x me-2"></i>Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus me-2"></i>Create Task
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
+
 {% block scripts %}
+<script>
+    window.PROJECT_ID = '{{ project._id }}';
+    window.USER_ID = '{{ session.get("user_id") }}';
+    window.USER_NAME = '{{ session.get("name", "Anonymous User") }}';
+</script>
+
 <script src="{{url_for('static', filename="js/modal.js")}}"></script>
+<script src="{{url_for('static', filename="js/board.js")}}"></script>
+<script src="{{url_for('static', filename="js/socket.js")}}"></script>
 {% endblock %}
