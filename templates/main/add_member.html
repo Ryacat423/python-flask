@@ -1,0 +1,124 @@
+{% extends "/main/layout.html" %}
+
+{% block additional_head %}
+<link rel="stylesheet" href="{{url_for('static', filename='css/main/controls.css')}}">
+<link rel="stylesheet" href="{{url_for('static', filename='css/main/projects.css')}}">
+{% endblock %}
+
+{% block content %}
+    <div class="header">
+        <h1>Project Members</h1>
+        <p>Manage and add members to the project</p>
+    </div>
+
+    
+    <div class="controls">
+        <div class="search-bar">
+            <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <input type="text" class="search-input" placeholder="Search members..." id="searchInput">
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-secondary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                </svg>
+                Filter
+            </button>
+            {% if projects %}
+            <a href="{{ url_for('create_project') }}" class="btn btn-primary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Create Project
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div>
+            {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+    
+    <div class="projects-grid" id="projectsGrid">
+        {% if projects %}
+            {% for project in projects %}
+            <div class="project-card" data-project-id="{{ project._id }}">
+                <div class="project-color {{ project.color_class }}"></div>
+                <div class="project-header">
+                    <div>
+                        <div class="project-title">{{ project.project_name }}</div>
+                        <div class="project-description">
+                            {% if project.description %}
+                                {{ project.description[:150] }}{% if project.description|length > 150 %}...{% endif %}
+                            {% else %}
+                                No description provided.
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="dropdown dropend">
+                        <button class="btn btn-link p-0 project-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('view_project', project_id=project._id) }}">
+                                    View Project
+                                </a>
+                            </li>
+                            {% if project.user_id == session.user_id %}
+                            <li><a class="dropdown-item" href="#">Edit Project</a></li>
+                            <li><a class="dropdown-item" href="#">Add Member</a></li>
+                            <li><a class="dropdown-item text-danger" href="#">Delete Project</a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="project-status status-{{ project.status }}">
+                    {{ project.status.title() }}
+                </div>
+                
+                <div class="project-progress">
+                    <div class="progress-label">
+                        <span>Progress</span>
+                        <span>{{ project.progress }}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 2%"></div>
+                    </div>
+                </div>
+                
+                <div class="project-footer">
+                    <div class="project-meta">
+                        <div class="meta-item">
+                            <i class="bi bi-clipboard-check"></i>
+                            {{ project.formatted_date }}
+                        </div>
+                        <div class="meta-item">
+                                <i class="bi bi-people"></i>
+                            {{ project.member_count }} Member{{ 's' if project.member_count != 1 else '' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    {% block scripts %}
+    <script src="{{url_for('static', filename='js/projects.js')}}">
+    </script>
+    {% endblock %}
+{% endblock %}
