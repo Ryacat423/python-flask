@@ -1,4 +1,5 @@
 from flask import request, flash, render_template, redirect, url_for, session, current_app
+
 from db import users_collection as users
 
 from utils.auth_checker import validate_email, validate_password
@@ -6,6 +7,8 @@ from utils.token import generate_confirmation_token
 from functools import wraps
 
 from flask_mail import Message
+
+from extensions.bcrypt import bcrypt
 from extensions.mail import mail
 
 def auth_register():
@@ -38,18 +41,20 @@ def auth_register():
             return render_template('/auth/register.html')
         
         try:
+
+            hashed_password = bcrypt.generate_password_hash(password)
             user_data = {
                 'firstname': fname,
                 'lastname': lname,
                 'email': email,
-                'password': password,
+                'password': hashed_password,
                 'email_verified': False
             }
             
             result = users.insert_one(user_data)
             
             if result.inserted_id:
-                token = generate_confirmation_token(email)
+                token = generate_confirmation_token(email).decode('utf-8')
                 confirm_url = url_for('confirm_email', token=token, _external=True)
                 try:
                     msg = Message(
@@ -96,7 +101,7 @@ def auth_login():
         try:
             user = users.find_one({'email': email})
             
-            if user and user['password'] == password:
+            if user and bcrypt.check_password_hash(user['password'], password):
                 if not user.get('email_verified', False):
                     flash('Please confirm your email before logging in.', 'warning')
                     return render_template('/auth/login.html')
