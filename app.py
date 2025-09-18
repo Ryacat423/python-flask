@@ -8,7 +8,10 @@ from utils.socket import init_socketio, get_socketio
 
 from authlib.integrations.flask_client import OAuth
 from instance.api_key import *
+
 from extensions.mail import mail
+from extensions.bcrypt import bcrypt
+
 from db import users_collection as users
 from datetime import datetime
 
