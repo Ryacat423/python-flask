@@ -68,7 +68,7 @@ def project_create():
                 'project_name': project_name,
                 'description': description,
                 'user_id': user_id,
-                'members': [user_id],
+                'members': [ObjectId(user_id)],
                 'created_at': datetime.now(),
                 'updated_at': datetime.now(),
                 'status': 'active',
@@ -106,8 +106,7 @@ def project_view(project_id):
         if not project:
             flash('Project not found or you do not have access to it.', 'error')
             return redirect(url_for('projects'))
-        
-        # Fetch columns for this project with task counts
+
         columns_pipeline = [
             {'$match': {'project': ObjectId(project_id)}},
             {'$lookup': {
@@ -124,10 +123,7 @@ def project_view(project_id):
         
         columns = list(column_collection.aggregate(columns_pipeline))
         
-        # Calculate project stats
         total_tasks = sum(col.get('task_count', 0) for col in columns)
-        
-        # Get task statistics
         task_stats = {}
         if columns:
             task_pipeline = [
@@ -156,59 +152,6 @@ def project_view(project_id):
     except Exception as e:
         print(f"Project view error: {e}")
         flash('An error occurred while loading the project.', 'error')
-        return redirect(url_for('projects'))
-
-def project_add_member(project_id):
-    try:
-        user_id = session.get('user_id')
-        project = projects_collection.find_one({
-            '_id': project_id,
-            'user_id': user_id
-        })
-        
-        if not project:
-            flash('Project not found or you do not have permission to manage it.', 'error')
-            return redirect(url_for('projects'))
-        
-        if request.method == 'POST':
-            member_email = request.form['member_email'].strip().lower()
-            
-            if not member_email:
-                flash('Member email is required!', 'error')
-                return render_template('/main/add_member.html', project=project)
-
-            from db import users_collection
-            member = users_collection.find_one({'email': member_email})
-            
-            if not member:
-                flash('User with this email not found.', 'error')
-                return render_template('/main/add_member.html', project=project)
-            
-            member_id = str(member['_id'])
-            if member_id in project.get('members', []):
-                flash('This user is already a member of the project.', 'info')
-                return render_template('/main/add_member.html', project=project)
-
-            result = projects_collection.update_one(
-                {'_id': project_id},
-                {
-                    '$addToSet': {'members': member_id},
-                    '$set': {'updated_at': datetime.now()}
-                }
-            )
-            
-            if result.modified_count > 0:
-                flash(f'Successfully added {member["firstname"]} {member["lastname"]} to the project!', 'success')
-                return redirect(url_for('project_view', project_id=project_id))
-            else:
-                flash('Failed to add member to project.', 'error')
-                return render_template('/main/add_member.html', project=project)
-        
-        return render_template('/main/add_member.html', project=project)
-        
-    except Exception as e:
-        print(f"Add member error: {e}")
-        flash('An error occurred while adding the member.', 'error')
         return redirect(url_for('projects'))
     
 def column_create(project_id):        
@@ -487,3 +430,71 @@ def task_move(project_id):
     except Exception as e:
         print(f"Task move error: {e}")
         return jsonify({'success': False, 'message': 'Internal server error'}), 500
+
+def project_add_member(project_id):
+    try:
+        user_id = session.get('user_id')
+        project = projects_collection.find_one({
+            '_id': ObjectId(project_id),
+            'user_id': ObjectId(user_id)
+        })
+
+        members_pipeline = [
+            {'$match': {'_id': ObjectId(project_id)}},
+            {'$lookup': {
+                'from': 'users',
+                'localField': 'members',
+                'foreignField': '_id',
+                'as': 'members'
+            }},
+            {'$limit': 1}
+        ]
+        
+        members = list(projects_collection.aggregate(members_pipeline))
+
+        print(members)
+
+        if not project:
+            flash('Project not found or you do not have permission to manage it.', 'error')
+            return redirect(url_for('projects'))
+        
+        if request.method == 'POST':
+            member_email = request.form['member_email'].strip().lower()
+            
+            if not member_email:
+                flash('Member email is required!', 'error')
+                return render_template('/main/add_member.html', project=project)
+
+            from db import users_collection
+            member = users_collection.find_one({'email': member_email})
+            
+            if not member:
+                flash('User with this email not found.', 'error')
+                return render_template('/main/add_member.html', project=project)
+            
+            member_id = str(member['_id'])
+            if member_id in project.get('members', []):
+                flash('This user is already a member of the project.', 'info')
+                return render_template('/main/add_member.html', project=project)
+
+            result = projects_collection.update_one(
+                {'_id': project_id},
+                {
+                    '$addToSet': {'members': member_id},
+                    '$set': {'updated_at': datetime.now()}
+                }
+            )
+            
+            if result.modified_count > 0:
+                flash(f'Successfully added {member["firstname"]} {member["lastname"]} to the project!', 'success')
+                return redirect(url_for('project_view', project_id=project_id))
+            else:
+                flash('Failed to add member to project.', 'error')
+                return render_template('/main/add_member.html', project=project)
+        
+        return render_template('/main/add_member.html', project=project, members = members)
+        
+    except Exception as e:
+        print(f"Add member error: {e}")
+        flash('An error occurred while adding the member.', 'error')
+        return redirect(url_for('projects'))
