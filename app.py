@@ -4,7 +4,7 @@ from routes.projects import *
 
 from utils.token import confirm_token
 from utils.decorators import login_required
-from utils.socket import init_socketio, get_socketio  
+from utils.socket import init_socketio  
 
 from authlib.integrations.flask_client import OAuth
 from instance.api_key import *
@@ -14,6 +14,7 @@ from extensions.bcrypt import bcrypt
 
 from db import users_collection as users
 from datetime import datetime
+from bson import ObjectId
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
@@ -159,16 +160,25 @@ def projects():
 def create_project():
     return project_create()
 
-@app.route('/projects/<project_id>', methods=['GET'])
+@app.route('/projects/<project_id>')
 @login_required
 def view_project(project_id):
     return project_view(project_id)
 
+@app.route('/projects/<project_id>/members')
+@login_required
+def view_members(project_id):
+    return project_view_members(project_id)
 
 @app.route('/projects/<project_id>/add-member', methods=['GET', 'POST'])
 @login_required
 def add_member_to_project(project_id):
     return project_add_member(project_id)
+
+@app.route('/projects/<project_id>/remove-member', methods=['POST'])
+@login_required
+def remove_member_from_project(project_id):
+    return project_remove_member(project_id)
 
 @app.route('/projects/<project_id>/columns/create', methods=['POST'])
 @login_required
@@ -184,7 +194,6 @@ def create_task(project_id):
 @login_required
 def move_task(project_id):
     return task_move(project_id)
-
 
 # ====== END OF PROJECT ROUTES ======
 
