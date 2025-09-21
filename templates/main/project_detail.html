@@ -39,11 +39,11 @@
                         <span>New Task</span>
                     </button>
 
-                    <a 
-                        href="{{ url_for('add_member_to_project', project_id=project._id) }}"
+                    <a
+                        href="{{ url_for('view_members', project_id=project._id) }}"
                         class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2"
                             style="font-size: clamp(0.75rem, 1.6vw, 0.875rem);">
-                        <i class="bi bi-eye"></i>
+                        <i class="bi bi-people"></i>
                         <span>View Members</span>
                     </a>
                 </div>
