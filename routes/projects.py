@@ -1,6 +1,7 @@
 from db import projects_collection as projects_collection
 from db import column_collection as column_collection
 from db import tasks_collection as tasks_collection
+from db import users_collection as users_collection
 
 from utils.socket import broadcast_to_project, get_socketio
 
@@ -15,7 +16,7 @@ def projects_list(template):
         user_projects = projects_collection.find({
             '$or': [
                 {'user_id': user_id},
-                {'members': user_id}
+                {'members': ObjectId(user_id)}
             ]
         }).sort('created_at', -1)
         
@@ -99,7 +100,7 @@ def project_view(project_id):
             '_id': ObjectId(project_id),
             '$or': [
                 {'user_id': user_id},
-                {'members': user_id}
+                {'members': ObjectId(user_id)}
             ]
         })
         
@@ -165,7 +166,7 @@ def column_create(project_id):
                 '_id': ObjectId(project_id),
                 '$or': [
                     {'user_id': user_id},
-                    {'members': user_id}
+                    {'members': ObjectId(user_id)}
                 ]
             })
             
@@ -258,7 +259,7 @@ def task_create(project_id):
                 '_id': ObjectId(project_id),
                 '$or': [
                     {'user_id': user_id},
-                    {'members': user_id}
+                    {'members': ObjectId(user_id)}
                 ]
             })
             
@@ -287,7 +288,6 @@ def task_create(project_id):
             if labels_str:
                 labels = [label.strip() for label in labels_str.split(',') if label.strip()]
 
-            from db import users_collection
             user_info = users_collection.find_one({'_id': ObjectId(user_id)})
             assignee_name = f"{user_info.get('firstname', '')} {user_info.get('lastname', '')}".strip()
             assignee_initials = ''.join([name[0].upper() for name in assignee_name.split() if name])[:2]
@@ -367,12 +367,12 @@ def task_move(project_id):
         source_column_id = data.get('sourceColumnId')
         target_column_id = data.get('targetColumnId')
         user_id = session.get('user_id')
-        
+
         project = projects_collection.find_one({
             '_id': ObjectId(project_id),
             '$or': [
                 {'user_id': user_id},
-                {'members': user_id}
+                {'members': ObjectId(user_id)}
             ]
         })
         
@@ -434,25 +434,11 @@ def task_move(project_id):
 def project_add_member(project_id):
     try:
         user_id = session.get('user_id')
+        
         project = projects_collection.find_one({
             '_id': ObjectId(project_id),
-            'user_id': ObjectId(user_id)
+            'user_id': user_id
         })
-
-        members_pipeline = [
-            {'$match': {'_id': ObjectId(project_id)}},
-            {'$lookup': {
-                'from': 'users',
-                'localField': 'members',
-                'foreignField': '_id',
-                'as': 'members'
-            }},
-            {'$limit': 1}
-        ]
-        
-        members = list(projects_collection.aggregate(members_pipeline))
-
-        print(members)
 
         if not project:
             flash('Project not found or you do not have permission to manage it.', 'error')
@@ -465,36 +451,139 @@ def project_add_member(project_id):
                 flash('Member email is required!', 'error')
                 return render_template('/main/add_member.html', project=project)
 
-            from db import users_collection
             member = users_collection.find_one({'email': member_email})
             
             if not member:
                 flash('User with this email not found.', 'error')
                 return render_template('/main/add_member.html', project=project)
             
-            member_id = str(member['_id'])
-            if member_id in project.get('members', []):
+            member_object_id = member['_id']
+            if member_object_id in project.get('members', []):
                 flash('This user is already a member of the project.', 'info')
                 return render_template('/main/add_member.html', project=project)
 
             result = projects_collection.update_one(
-                {'_id': project_id},
+                {'_id': ObjectId(project_id)},
                 {
-                    '$addToSet': {'members': member_id},
+                    '$addToSet': {'members': member_object_id},
                     '$set': {'updated_at': datetime.now()}
                 }
             )
             
             if result.modified_count > 0:
                 flash(f'Successfully added {member["firstname"]} {member["lastname"]} to the project!', 'success')
-                return redirect(url_for('project_view', project_id=project_id))
+                return redirect(url_for('project_view_members', project_id=project_id))
             else:
                 flash('Failed to add member to project.', 'error')
                 return render_template('/main/add_member.html', project=project)
         
-        return render_template('/main/add_member.html', project=project, members = members)
+        return render_template('/main/add_member.html', project=project)
         
     except Exception as e:
         print(f"Add member error: {e}")
         flash('An error occurred while adding the member.', 'error')
         return redirect(url_for('projects'))
+
+def project_view_members(project_id):
+    try:
+        user_id = session.get('user_id')
+        project = projects_collection.find_one({
+            '_id': ObjectId(project_id),
+            '$or': [
+                {'user_id': user_id},
+                {'members': ObjectId(user_id)}
+            ]
+        })
+
+        if not project:
+            flash('Project not found or you do not have access to it.', 'error')
+            return redirect(url_for('projects'))
+
+        members_pipeline = [
+            {'$match': {'_id': ObjectId(project_id)}},
+            {'$lookup': {
+                'from': 'users',
+                'localField': 'members',
+                'foreignField': '_id',
+                'as': 'member_details'
+            }},
+            {'$project': {
+                'project_name': 1,
+                'description': 1,
+                'user_id': 1,
+                'member_details': {
+                    '_id': 1,
+                    'firstname': 1,
+                    'lastname': 1,
+                    'email': 1,
+                    'picture': 1
+                }
+            }}
+        ]
+        
+        result = list(projects_collection.aggregate(members_pipeline))
+        
+        if not result:
+            flash('Project not found.', 'error')
+            return redirect(url_for('projects'))
+            
+        project_with_members = result[0]
+        members = project_with_members.get('member_details', [])
+        
+        for member in members:
+            member['is_owner'] = str(member['_id']) == project['user_id']
+        
+        return render_template('/main/view_members.html', 
+                             project=project_with_members, 
+                             members=members,
+                             is_owner=(user_id == project['user_id']))
+        
+    except Exception as e:
+        print(f"View members error: {e}")
+        flash('An error occurred while loading project members.', 'error')
+        return redirect(url_for('projects'))
+    
+def project_remove_member(project_id):
+    try:
+        user_id = session.get('user_id')
+        member_id = request.form.get('member_id')
+        
+        project = projects_collection.find_one({
+            '_id': ObjectId(project_id),
+            'user_id': user_id
+        })
+
+        if not project:
+            flash('Project not found or you do not have permission to manage it.', 'error')
+            return redirect(url_for('projects'))
+        
+        if not member_id:
+            flash('Invalid member selected.', 'error')
+            return redirect(url_for('view_members', project_id=project_id))
+        
+        if member_id == user_id:
+            flash('You cannot remove yourself from the project.', 'error')
+            return redirect(url_for('view_members', project_id=project_id))
+
+        result = projects_collection.update_one(
+            {'_id': ObjectId(project_id)},
+            {
+                '$pull': {'members': ObjectId(member_id)},
+                '$set': {'updated_at': datetime.now()}
+            }
+        )
+        
+        if result.modified_count > 0:
+            member = users_collection.find_one({'_id': ObjectId(member_id)})
+            if member:
+                flash(f'Successfully removed {member["firstname"]} {member["lastname"]} from the project.', 'success')
+            else:
+                flash('Member removed successfully.', 'success')
+        else:
+            flash('Failed to remove member from project.', 'error')
+            
+    except Exception as e:
+        print(f"Remove member error: {e}")
+        flash('An error occurred while removing the member.', 'error')
+    
+    return redirect(url_for('view_members', project_id=project_id))
