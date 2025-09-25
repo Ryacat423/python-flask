@@ -1,16 +1,21 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+
 from routes.auth import auth_register, auth_login, auth_logout
 from routes.projects import *
+from routes.task import *
 
 from utils.token import confirm_token
 from utils.decorators import login_required
 from utils.socket import init_socketio  
 
 from authlib.integrations.flask_client import OAuth
+from requests_oauthlib import OAuth2Session
+
 from instance.api_key import *
 
 from extensions.mail import mail
 from extensions.bcrypt import bcrypt
+# from extensions.captcha import recaptcha
 
 from db import users_collection as users
 from datetime import datetime
@@ -23,6 +28,10 @@ socketio = init_socketio(app)
 
 oauth = OAuth(app)
 
+# app.config['RECAPTCHA_USE_SSL'] = True
+# app.config['RECAPTCHA_SITE_KEY'] = CAPTCHA_SITE_KEY
+# app.config['RECAPTCHA_SECRET_KEY'] = CAPTCHA_SECRET_KEY
+
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USERNAME'] = DEL_EMAIL
@@ -33,6 +42,7 @@ app.config['MAIL_DEFAULT_SENDER'] = DEL_EMAIL
 app.config['MAIL_DEBUG'] = True 
 
 mail.init_app(app)
+# recaptcha.init_app(app)
 
 google = oauth.register(
     name="google",
@@ -41,6 +51,13 @@ google = oauth.register(
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     client_kwargs={"scope": "openid email profile"},
 )
+
+# GitHub OAuth credentials
+GITHUB_CLIENT_ID = GITHUB_ID
+GITHUB_CLIENT_SECRET = GITHUB_SECRET
+GITHUB_AUTHORIZATION_BASE_URL = "https://github.com/login/oauth/authorize"
+GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token"
+GITHUB_API_BASE_URL = "https://api.github.com/"
 
 # ====== LANDING & AUTH ROUTES ======
 @app.route('/')
@@ -58,6 +75,21 @@ def login():
 @app.route('/logout')
 def logout():
     return auth_logout() 
+
+@app.route("/github-login")
+def github_login():
+    github = OAuth2Session(GITHUB_CLIENT_ID, scope=["user", "repo"])
+    authorization_url, state = github.authorization_url(GITHUB_AUTHORIZATION_BASE_URL)
+    session["oauth_state"] = state
+    return redirect(authorization_url)
+
+@app.route("/github-callback")
+def github_callback():
+    github = OAuth2Session(GITHUB_CLIENT_ID, state=session["oauth_state"])
+    token = github.fetch_token(GITHUB_TOKEN_URL, client_secret=GITHUB_CLIENT_SECRET,
+                               authorization_response=request.url)
+    session["github_token"] = token
+    return "Logged in with GitHub!"
 
 @app.route('/login/google')
 def login_google():
@@ -185,6 +217,9 @@ def remove_member_from_project(project_id):
 def create_column(project_id):
     return column_create(project_id)
 
+# ====== END OF PROJECT ROUTES ======
+
+# ====== TASK ROUTES ======
 @app.route('/projects/<project_id>/tasks/create', methods=['POST'])
 @login_required
 def create_task(project_id):
@@ -195,7 +230,11 @@ def create_task(project_id):
 def move_task(project_id):
     return task_move(project_id)
 
-# ====== END OF PROJECT ROUTES ======
+@app.route('/projects/<project_id>/tasks/<task_id>/edit', methods=['GET', 'POST'])
+@login_required
+def update_task(project_id, task_id):
+    return task_update(project_id, task_id)
+
 
 @app.context_processor
 def inject_current_year():
