@@ -1,0 +1,251 @@
+<!-- Add Column Modal -->
+<div class="modal fade" id="addColumnModal" tabindex="-1" aria-labelledby="addColumnModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addColumnModalLabel">
+                    <i class="bi bi-columns"></i> Add New Column
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{url_for('create_column', project_id=project._id)}}">
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <label for="columnHeader" class="form-label">
+                            <i class="bi bi-card-heading me-2 text-primary"></i>Column Header
+                        </label>
+                        <div class="input-group">
+                            <input type="text" 
+                                class="form-control" 
+                                id="columnHeader" 
+                                name="label"
+                                placeholder="e.g., To Do, In Progress, Done..."
+                                maxlength="50"
+                                required>
+                            <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                        </div>
+                        <small class="form-text text-muted mt-2">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Choose a clear, descriptive name for your column
+                        </small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-palette me-2 text-primary"></i>Column Color
+                        </label>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% set colors = ['light-blue', 'light-green', 'light-purple', 'light-orange', 'light-pink', 'light-yellow', 'light-cyan', 'light-gray'] %}
+                            {% for color in colors %}
+                                {% set color_id = color.replace('light-', '') %}
+                                <input type="radio" name="color" value="{{ color }}" id="color-{{ color_id }}" class="d-none" {% if loop.first %}checked{% endif %}>
+                                <label for="color-{{ color_id }}" class="color-option color-{{ color }} {% if loop.first %}selected{% endif %}" data-color="{{ color }}"></label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x me-2"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus me-2"></i>Create Column
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTaskModalLabel">
+                    <i class="bi bi-plus-circle"></i> Create New Task
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{url_for('create_task', project_id=project._id)}}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="taskTitle" class="form-label">
+                                    <i class="bi bi-card-text me-2 text-primary"></i>Task Title *
+                                </label>
+                                <input type="text" class="form-control" id="taskTitle" name="title" 
+                                        placeholder="Enter task title..." maxlength="100" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="taskDescription" class="form-label">
+                                    <i class="bi bi-file-text me-2 text-primary"></i>Description
+                                </label>
+                                <textarea class="form-control" id="taskDescription" name="description" 
+                                            rows="3" placeholder="Describe the task..."></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="taskType" class="form-label">
+                                    <i class="bi bi-tag me-2 text-primary"></i>Type
+                                </label>
+                                <select class="form-select" id="taskType" name="type">
+                                    <option value="task">Task</option>
+                                    <option value="bug">Bug</option>
+                                    <option value="feature">Feature</option>
+                                    <option value="improvement">Improvement</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="taskPriority" class="form-label">
+                                    <i class="bi bi-exclamation-triangle me-2 text-primary"></i>Priority
+                                </label>
+                                <select class="form-select" id="taskPriority" name="priority">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="taskDueDate" class="form-label">
+                                    <i class="bi bi-calendar me-2 text-primary"></i>Due Date
+                                </label>
+                                <input type="date" class="form-control" id="taskDueDate" name="due_date">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="taskColumn" class="form-label">
+                                    <i class="bi bi-columns me-2 text-primary"></i>Column *
+                                </label>
+                                <select class="form-select" id="taskColumn" name="column_id" required>
+                                    {% for column in columns %}
+                                    <option value="{{ column._id }}">{{ column.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="taskLabels" class="form-label">
+                            <i class="bi bi-tags me-2 text-primary"></i>Labels
+                        </label>
+                        <input type="text" class="form-control" id="taskLabels" name="labels" 
+                                placeholder="Enter labels separated by commas (e.g., frontend, urgent, review)">
+                        <small class="form-text text-muted">Separate multiple labels with commas</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x me-2"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus me-2"></i>Create Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTaskModalLabel">
+                    <i class="bi bi-plus-circle"></i> Edit Task
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{url_for('create_task', project_id=project._id)}}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="taskTitle" class="form-label">
+                                    <i class="bi bi-card-text me-2 text-primary"></i>Task Title *
+                                </label>
+                                <input type="text" class="form-control" id="taskTitle" name="title" 
+                                        placeholder="Enter task title..." maxlength="100" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="taskDescription" class="form-label">
+                                    <i class="bi bi-file-text me-2 text-primary"></i>Description
+                                </label>
+                                <textarea class="form-control" id="taskDescription" name="description" 
+                                            rows="3" placeholder="Describe the task..."></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="taskType" class="form-label">
+                                    <i class="bi bi-tag me-2 text-primary"></i>Type
+                                </label>
+                                <select class="form-select" id="taskType" name="type">
+                                    <option value="task">Task</option>
+                                    <option value="bug">Bug</option>
+                                    <option value="feature">Feature</option>
+                                    <option value="improvement">Improvement</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="taskPriority" class="form-label">
+                                    <i class="bi bi-exclamation-triangle me-2 text-primary"></i>Priority
+                                </label>
+                                <select class="form-select" id="taskPriority" name="priority">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="taskDueDate" class="form-label">
+                                    <i class="bi bi-calendar me-2 text-primary"></i>Due Date
+                                </label>
+                                <input type="date" class="form-control" id="taskDueDate" name="due_date">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="taskColumn" class="form-label">
+                                    <i class="bi bi-columns me-2 text-primary"></i>Column *
+                                </label>
+                                <select class="form-select" id="taskColumn" name="column_id" required>
+                                    {% for column in columns %}
+                                    <option value="{{ column._id }}">{{ column.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="taskLabels" class="form-label">
+                            <i class="bi bi-tags me-2 text-primary"></i>Labels
+                        </label>
+                        <input type="text" class="form-control" id="taskLabels" name="labels" 
+                                placeholder="Enter labels separated by commas (e.g., frontend, urgent, review)">
+                        <small class="form-text text-muted">Separate multiple labels with commas</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x me-2"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus me-2"></i>Edit Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
