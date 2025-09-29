@@ -3,6 +3,8 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from routes.auth import auth_register, auth_login, auth_logout
 from routes.projects import *
 from routes.task import *
+from routes.profile import *
+from routes.settings import *
 
 from utils.token import confirm_token
 from utils.decorators import login_required
@@ -230,12 +232,30 @@ def create_task(project_id):
 def move_task(project_id):
     return task_move(project_id)
 
+@app.route('/projects/<project_id>/tasks/<task_id>/delete', methods=['POST'])
+@login_required
+def delete_task(project_id, task_id):
+    return task_delete(project_id, task_id)
+
 @app.route('/projects/<project_id>/tasks/<task_id>/edit', methods=['GET', 'POST'])
 @login_required
-def update_task(project_id, task_id):
+def edit_task(project_id, task_id):
     return task_update(project_id, task_id)
 
+# ====== PROFILE ROUTES ======
+@login_required
+@app.route('/profile')
+def profile():
+    return view_profile()
 
+# ====== END OF PROFILE ROUTES ======
+
+# ====== SETTINGS ROUTES ======
+@login_required
+@app.route('/settings')
+def settings():
+    return view_settings()
+# ====== END OF SETTINGS ROUTES ======
 @app.context_processor
 def inject_current_year():
     return {'current_year': datetime.now().year}
