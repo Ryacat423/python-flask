@@ -343,7 +343,6 @@ def task_update(project_id, task_id):
 def task_delete(project_id, task_id):
     try:
         user_id = session.get('user_id')
-
         project = projects_collection.find_one({
             '_id': ObjectId(project_id),
             '$or': [
@@ -364,7 +363,7 @@ def task_delete(project_id, task_id):
         if not task:
             flash('Task not found.', 'error')
             return redirect(url_for('view_project', project_id=project_id))
-     
+    
         task_title = task.get('title', 'Unknown Task')
         column_id = str(task.get('column_id'))
 
