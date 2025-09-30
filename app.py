@@ -22,8 +22,10 @@ from extensions.bcrypt import bcrypt
 from db import users_collection as users
 from datetime import datetime
 from bson import ObjectId
+import os
 
 app = Flask(__name__)
+
 app.secret_key = SECRET_KEY
 
 socketio = init_socketio(app)
@@ -34,6 +36,7 @@ oauth = OAuth(app)
 # app.config['RECAPTCHA_SITE_KEY'] = CAPTCHA_SITE_KEY
 # app.config['RECAPTCHA_SECRET_KEY'] = CAPTCHA_SECRET_KEY
 
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USERNAME'] = DEL_EMAIL
@@ -244,7 +247,7 @@ def edit_task(project_id, task_id):
 
 # ====== PROFILE ROUTES ======
 @login_required
-@app.route('/profile')
+@app.route('/profile', methods=['GET', 'POST'])
 def profile():
     return view_profile()
 
@@ -263,7 +266,6 @@ def inject_current_year():
 @app.context_processor
 def inject_user():
     raw_profile = session.get('picture')
-
     if raw_profile:
         if raw_profile.startswith("http"):
             profile_url = raw_profile
@@ -275,8 +277,11 @@ def inject_user():
     return dict(
         user_name=session.get('name', 'User'),
         profile=profile_url,
-        user_email=session.get('email')
+        user_email=session.get('email'),
+        firstname=session.get('fname'),
+        lastname=session.get('lname')
     )
+
 
 if __name__ == "__main__":
     socketio.run(app, host='0.0.0.0', debug=True, port=5000)
