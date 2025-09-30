@@ -6,6 +6,218 @@
 
 {% block content %}
 
-profile page
+<div >
+  <div class="profile-header">
+    <div class="profile-top">
+      <div class="avatar-section">
+        <div class="avatar">
+          {% if profile %}
+            <img src="{{ profile }}" alt="User Profile">
+          {%endif%}
+        </div>
+        <form action="{{url_for('profile')}}" enctype="multipart/form-data" method="POST">
+          <div class="avatar-upload text-dark" title="Change avatar">
+            <label for="profile-input" style="cursor: pointer;">
+              <i class="bi bi-camera"></i>
+            </label>
+            <input type="file" id="profile-input" accept="image/*" name="profile" style="display: none;" onchange="this.form.submit()">
+          </div>
+        </form>
+
+      </div>
+      <div class="profile-info">
+        <h1>{{user_name}}</h1>
+        <p>@{{user_name|lower|replace(' ', '')}}</p>
+      </div>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div>
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="profile-content">
+    <div class="profile-section">
+      <h2 class="section-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        Personal Information
+      </h2>
+      <form action="{{ url_for('profile') }}" method="POST">
+        <input type="hidden" name="action" value="update_info">
+        <!-- <div class="form-group">
+          <label for="fullname">Full Name</label>
+          <input type="text" id="fullname" value="{{user_name}}" placeholder="Enter your full name">
+        </div> -->
+        <div class="form-group">
+          <label for="firstname">First Name</label>
+          <input type="text" id="firstname" name="firstname" 
+            value="{{ firstname }}" placeholder="Enter your first name">
+        </div>
+
+        <div class="form-group">
+          <label for="lastname">Last Name</label>
+          <input type="text" id="lastname" name="lastname" 
+            value="{{ lastname }}" placeholder="Enter your last name">
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" value="{{user_email}}" placeholder="your.email@example.com" name="email">
+        </div>
+        <!-- <div class="form-group">
+          <label for="bio">Bio</label>
+          <textarea id="bio" placeholder="Tell us about yourself...">Project manager passionate about productivity and team collaboration.</textarea>
+        </div> -->
+        <div class="button-group">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <button type="button" class="btn btn-secondary">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="profile-section">
+      <h2 class="section-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        Security
+      </h2>
+
+      <form action="{{url_for('profile')}}" method="POST">
+        <input type="hidden" name="action" value="update_password">
+        <div class="form-group">
+          <label for="current-password">Current Password</label>
+          <input type="password" id="current-password" placeholder="Enter current password" name="current_password">
+        </div>
+        <div class="form-group">
+          <label for="new-password">New Password</label>
+          <input type="password" id="new-password" placeholder="Enter new password" name="new_password">
+        </div>
+        <div class="form-group">
+          <label for="confirm-password">Confirm New Password</label>
+          <input type="password" id="confirm-password" placeholder="Confirm new password" name="confirm_password">
+        </div>
+        <div class="button-group">
+          <button type="submit" class="btn btn-primary">Update Password</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="profile-section">
+      <h2 class="section-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 1v6m0 6v6m7.071-14.071l-4.243 4.243m-5.656 5.656L4.93 19.071M23 12h-6m-6 0H1m14.071 7.071l-4.243-4.243m-5.656-5.656L4.93 4.93"></path>
+        </svg>
+        Preferences
+      </h2>
+      <!-- <div class="preference-item">
+        <div class="preference-info">
+          <h4>Email Notifications</h4>
+          <p>Receive updates about your boards and tasks</p>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="preference-item">
+        <div class="preference-info">
+          <h4>Push Notifications</h4>
+          <p>Get notified about important updates</p>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" checked>
+          <span class="slider"></span>
+        </label>
+      </div> -->
+      <div class="preference-item">
+        <div class="preference-info">
+          <h4>Dark Mode</h4>
+          <p>Switch to dark theme</p>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <!-- <div class="preference-item">
+        <div class="preference-info">
+          <h4>Weekly Summary</h4>
+          <p>Receive weekly productivity reports</p>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" checked>
+          <span class="slider"></span>
+        </label>
+      </div> -->
+    </div>
+
+    <div class="profile-section">
+      <h2 class="section-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+        Recent Activity
+      </h2>
+      <!-- <div class="activity-item">
+        <div class="activity-icon">📋</div>
+        <div class="activity-content">
+          <h4>Created new board "Marketing Campaign"</h4>
+          <p>2 hours ago</p>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-icon">✅</div>
+        <div class="activity-content">
+          <h4>Completed task "Design mockups"</h4>
+          <p>5 hours ago</p>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-icon">👥</div>
+        <div class="activity-content">
+          <h4>Added 3 members to "Development Team"</h4>
+          <p>Yesterday</p>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-icon">💬</div>
+        <div class="activity-content">
+          <h4>Commented on "Q4 Planning"</h4>
+          <p>2 days ago</p>
+        </div>
+      </div> -->
+    </div>
+
+    <div class="profile-section danger-zone" style="grid-column: 1 / -1;">
+      <h2 class="section-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        Danger Zone
+      </h2>
+      <p style="margin: 0 0 1rem 0; color: var(--text-gray);">
+        Once you delete your account, there is no going back. Please be certain.
+      </p>
+      <button type="button" class="btn btn-danger">Delete Account</button>
+    </div>
+
+  </div>
+</div>
 
 {% endblock %}
