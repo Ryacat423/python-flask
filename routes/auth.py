@@ -10,6 +10,7 @@ from flask_mail import Message
 
 from extensions.bcrypt import bcrypt
 from extensions.mail import mail
+# from extensions.captcha import recaptcha
 
 def auth_register():
     if request.method == 'POST':
@@ -108,6 +109,9 @@ def auth_login():
                 
                 session['user_id'] = str(user['_id'])
                 session['name'] = f"{user['firstname']} {user['lastname']}"
+                session['fname'] = user['firstname']
+                session['lname'] = user['lastname']
+
                 session['picture'] = user.get('picture') or None
 
                 session['email'] = user['email']
