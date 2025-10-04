@@ -3,6 +3,7 @@
 {% block additional_head %}
 <link rel="stylesheet" href="{{url_for('static', filename='css/main/controls.css')}}">
 <link rel="stylesheet" href="{{url_for('static', filename='css/main/projects.css')}}">
+
 {% endblock %}
 
 {% block content %}
@@ -11,7 +12,6 @@
         <p>Manage and track all your projects in one place</p>
     </div>
 
-    
     <div class="controls">
         <div class="search-bar">
             <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -21,12 +21,17 @@
         </div>
         
         <div class="action-buttons">
-            <button class="btn btn-secondary">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-                </svg>
-                Filter
-            </button>
+            <div class="view-toggle">
+                <button class="view-toggle-btn active" id="gridViewBtn" onclick="switchView('grid')">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                    <span class="d-none d-sm-inline">Grid</span>
+                </button>
+                <button class="view-toggle-btn" id="listViewBtn" onclick="switchView('list')">
+                    <i class="bi bi-list-ul"></i>
+                    <span class="d-none d-sm-inline">List</span>
+                </button>
+            </div>
+
             {% if projects %}
             <a href="{{ url_for('create_project') }}" class="btn btn-primary">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,20 +72,21 @@
                             {% endif %}
                         </div>
                     </div>
-                    <div class="dropdown dropend">
+                    <div class="dropdown">
                         <button class="btn btn-link p-0 project-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-three-dots-vertical"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('view_project', project_id=project._id) }}">
-                                    View Project
+                                    <i class="bi bi-eye me-2"></i>View Project
                                 </a>
                             </li>
                             {% if project.user_id == session.user_id %}
-                            <li><a class="dropdown-item" href="#">Edit Project</a></li>
-                            <li><a class="dropdown-item" href="#">Add Member</a></li>
-                            <li><a class="dropdown-item text-danger" href="#">Delete Project</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Edit Project</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-person-plus me-2"></i>Add Member</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Delete Project</a></li>
                             {% endif %}
                         </ul>
                     </div>
@@ -107,7 +113,7 @@
                             {{ project.formatted_date }}
                         </div>
                         <div class="meta-item">
-                                <i class="bi bi-people"></i>
+                            <i class="bi bi-people"></i>
                             {{ project.member_count }} Member{{ 's' if project.member_count != 1 else '' }}
                         </div>
                     </div>
@@ -133,8 +139,67 @@
         {% endif %}
     </div>
 
+    <!-- List View -->
+    <div class="projects-list hidden" id="projectsList">
+        {% if projects %}
+            {% for project in projects %}
+            <div class="project-card-list" data-project-id="{{ project._id }}">
+                <div class="project-color-list {{ project.color_class }}"></div>
+                <div class="project-content-list">
+                    <div class="project-header-list">
+                        <div style="flex: 1;">
+                            <div class="project-title-list">{{ project.project_name }}</div>
+                            <div class="project-description-list">
+                                {% if project.description %}
+                                    {{ project.description }}
+                                {% else %}
+                                    No description provided.
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-link p-0 project-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('view_project', project_id=project._id) }}">
+                                        <i class="bi bi-eye me-2"></i>View Project
+                                    </a>
+                                </li>
+                                {% if project.user_id == session.user_id %}
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Edit Project</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-person-plus me-2"></i>Add Member</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Delete Project</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="project-meta-list">
+                        <span class="project-status-list status-{{ project.status }}">
+                            {{ project.status.title() }}
+                        </span>
+                        <div class="meta-item-list">
+                            <i class="bi bi-clipboard-check"></i>
+                            <span>{{ project.formatted_date }}</span>
+                        </div>
+                        <div class="meta-item-list">
+                            <i class="bi bi-people"></i>
+                            <span>{{ project.member_count }} Member{{ 's' if project.member_count != 1 else '' }}</span>
+                        </div>
+                        <div class="meta-item-list">
+                            <i class="bi bi-graph-up"></i>
+                            <span>{{ project.progress }}% Complete</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
     {% block scripts %}
-    <script src="{{url_for('static', filename='js/projects.js')}}">
-    </script>
+    <script src="{{url_for('static', filename='js/projects.js')}}"></script>
     {% endblock %}
 {% endblock %}
