@@ -22,20 +22,8 @@ def projects_list(template):
         }).sort('created_at', -1)
         
         projects = list(user_projects)
-
-        total_projects = len(projects)
-        active_projects = len([p for p in projects if p.get('status') == 'active'])
-        completed_projects = len([p for p in projects if p.get('status') == 'completed'])
-        on_hold_projects = len([p for p in projects if p.get('status') == 'on_hold'])
         
-        stats = {
-            'total_projects': total_projects,
-            'active_projects': active_projects,
-            'completed_projects': completed_projects,
-            'on_hold_projects': on_hold_projects
-        }
-        
-        return render_template(f'/main/{template}.html', projects=projects, stats = stats)
+        return render_template(f'/main/{template}.html', projects=projects)
         
     except Exception as e:
         print(f"Projects list error: {e}")
@@ -108,6 +96,15 @@ def project_view(project_id):
         if not project:
             flash('Project not found or you do not have access to it.', 'error')
             return redirect(url_for('projects'))
+
+        projects_collection.update_one(
+            {'_id': ObjectId(project_id)},
+            {
+                '$set': {
+                    f'last_viewed.{user_id}': datetime.now()
+                }
+            }
+        )
 
         columns_pipeline = [
             {'$match': {'project': ObjectId(project_id)}},
