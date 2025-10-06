@@ -4,6 +4,13 @@ from flask import request, flash, redirect, url_for, session, jsonify, render_te
 from bson import ObjectId
 from datetime import datetime
 
+def my_tasks():
+    user = session.get('user_id')
+
+    res = tasks_collection.find({'assigned_to': ObjectId(user)}, {})
+    print(res)
+    return render_template('/tasks/tasks.html', tasks = res)
+
 def task_create(project_id):
     try:
         if request.method == 'POST':
@@ -396,3 +403,55 @@ def task_delete(project_id, task_id):
         print(f"Task delete error: {e}")
         flash('An error occurred while deleting the task.', 'error')
         return redirect(url_for('view_project', project_id=project_id))
+    
+def task_view_detail(project_id, task_id):
+    try:
+        user_id = session.get('user_id')
+        project = projects_collection.find_one({
+            '_id': ObjectId(project_id),
+            '$or': [
+                {'user_id': user_id},
+                {'members': ObjectId(user_id)}
+            ]
+        })
+        
+        if not project:
+            return jsonify({'success': False, 'message': 'Access denied'}), 403
+
+        task = tasks_collection.find_one({
+            '_id': ObjectId(task_id),
+            'project_id': ObjectId(project_id)
+        })
+        
+        if not task:
+            return jsonify({'success': False, 'message': 'Task not found'}), 404
+
+        column = column_collection.find_one({
+            '_id': task['column_id']
+        })
+
+        task_data = {
+            '_id': str(task['_id']),
+            'title': task.get('title', ''),
+            'description': task.get('description', ''),
+            'type': task.get('type', 'task'),
+            'priority': task.get('priority', 'medium'),
+            'due_date': task['due_date'].strftime('%b %d, %Y') if task.get('due_date') else None,
+            'created_at': task['created_at'].strftime('%b %d, %Y') if task.get('created_at') else None,
+            'labels': task.get('labels', []),
+            'assignee_name': task.get('assignee_name', 'Unassigned'),
+            'assignee_initials': task.get('assignee_initials', 'U'),
+            'column_name': column.get('label', '') if column else '',
+            'column_color': column.get('color', 'light-blue') if column else 'light-blue',
+            'project_name': project.get('project_name', ''),
+            'project_id': str(project['_id'])
+        }
+
+        return jsonify({
+            'success': True,
+            'task': task_data
+        })
+        
+    except Exception as e:
+        print(f"Task detail view error: {e}")
+        return jsonify({'success': False, 'message': 'Internal server error'}), 500
