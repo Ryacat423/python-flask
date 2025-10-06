@@ -1,0 +1,217 @@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="taskDetailOffcanvas">
+    <div class="offcanvas-header">
+        <div style="flex: 1;">
+            <h2 class="task-title-edit">Task 3: Implement user authentication</h2>
+            <div class="task-meta-row">
+                <a href="#" class="project-badge">
+                    <span class="project-color-dot" style="background: #3b82f6;"></span>
+                    Website Redesign
+                </a>
+                <span class="badge-custom" style="background: #f0f1f3; color: #5e6c84;">
+                    <i class="bi bi-kanban"></i>
+                    In Progress
+                </span>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+
+    <div class="offcanvas-body">
+        <div class="task-detail-section">
+            <div class="section-title">
+                <i class="bi bi-lightning-charge"></i>
+                Quick Actions
+            </div>
+            <button class="quick-action-btn">
+                <i class="bi bi-pencil"></i>
+                Edit Task
+            </button>
+            <button class="quick-action-btn">
+                <i class="bi bi-arrow-right"></i>
+                Move to Another Column
+            </button>
+            <button class="quick-action-btn text-danger">
+                <i class="bi bi-trash"></i>
+                Delete Task
+            </button>
+        </div>
+
+        <div class="task-detail-section">
+            <div class="section-title">
+                <i class="bi bi-info-circle"></i>
+                Details
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Priority</span>
+                <span class="badge-custom priority-medium">
+                    <i class="bi bi-exclamation-circle"></i>
+                    Medium
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Type</span>
+                <span class="badge-custom type-feature">
+                    <i class="bi bi-stars"></i>
+                    Feature
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Assigned To</span>
+                <span class="detail-value">Ramil Yacat</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Due Date</span>
+                <span class="detail-value">Sep 30, 2025</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Created</span>
+                <span class="detail-value">Sep 19, 2025</span>
+            </div>
+        </div>
+
+        <div class="task-detail-section">
+            <div class="section-title">
+                <i class="bi bi-align-start"></i>
+                Description
+            </div>
+            <p class="description-text">
+                Implement OAuth 2.0 authentication system with support for Google and GitHub providers. 
+                Include password reset functionality and email verification.
+            </p>
+            <button class="btn-link-custom">Edit Description</button>
+        </div>
+
+        <div class="task-detail-section">
+            <div class="section-title">
+                <i class="bi bi-chat-left-text"></i>
+                Comments (3)
+            </div>
+
+            <div class="comment-list">
+                <!-- Comment 1 -->
+                <div class="comment-item">
+                    <div class="comment-avatar">RY</div>
+                    <div class="comment-content">
+                        <div class="comment-header">
+                            <span class="comment-author">Ramil Yacat</span>
+                            <span class="comment-time">2 hours ago</span>
+                        </div>
+                        <div class="comment-text">
+                            Started working on the OAuth integration. Google provider is almost done, 
+                            testing it now.
+                        </div>
+                        <div class="comment-actions">
+                            <button class="comment-action-btn">
+                                <i class="bi bi-reply"></i> Reply
+                            </button>
+                            <button class="comment-action-btn">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <button class="comment-action-btn text-danger">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comment 2 -->
+                <div class="comment-item">
+                    <div class="comment-avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        JD
+                    </div>
+                    <div class="comment-content">
+                        <div class="comment-header">
+                            <span class="comment-author">John Doe</span>
+                            <span class="comment-time">5 hours ago</span>
+                        </div>
+                        <div class="comment-text">
+                            Great! Make sure to add proper error handling for failed authentication attempts.
+                        </div>
+                        <div class="comment-actions">
+                            <button class="comment-action-btn">
+                                <i class="bi bi-reply"></i> Reply
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comment 3 -->
+                <div class="comment-item">
+                    <div class="comment-avatar" style="background: linear-gradient(135deg, #fa709a, #fee140);">
+                        SK
+                    </div>
+                    <div class="comment-content">
+                        <div class="comment-header">
+                            <span class="comment-author">Sarah Kim</span>
+                            <span class="comment-time">1 day ago</span>
+                        </div>
+                        <div class="comment-text">
+                            Don't forget to implement rate limiting on the login endpoint to prevent brute force attacks.
+                        </div>
+                        <div class="comment-actions">
+                            <button class="comment-action-btn">
+                                <i class="bi bi-reply"></i> Reply
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Comment Form -->
+            <div class="comment-form">
+                <div class="comment-avatar">RY</div>
+                <textarea class="comment-input" placeholder="Write a comment..."></textarea>
+            </div>
+            <div style="text-align: right; margin-top: 0.75rem;">
+                <button class="comment-submit-btn">
+                    <i class="bi bi-send"></i>
+                    Post Comment
+                </button>
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="task-detail-section">
+            <div class="section-title">
+                <i class="bi bi-clock-history"></i>
+                Activity
+            </div>
+            
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-text">
+                        <strong>Ramil Yacat</strong> moved this task from <strong>To Do</strong> to <strong>In Progress</strong>
+                    </div>
+                    <div class="activity-time">2 hours ago</div>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="bi bi-exclamation-circle"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-text">
+                        <strong>John Doe</strong> changed priority from <strong>Low</strong> to <strong>Medium</strong>
+                    </div>
+                    <div class="activity-time">5 hours ago</div>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="bi bi-plus"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-text">
+                        <strong>Ramil Yacat</strong> created this task
+                    </div>
+                    <div class="activity-time">Sep 19, 2025</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
