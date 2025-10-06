@@ -1,0 +1,253 @@
+{% extends "/main/layout.html" %}
+
+{% block additional_head %}
+<link rel="stylesheet" href="{{url_for('static', filename='css/main/tasks.css')}}">
+<link rel="stylesheet" href="{{url_for('static', filename='css/main/controls.css')}}">
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>My Tasks</h1>
+    <p>Manage and track all your projects in one place</p>
+</div>
+
+<div class="controls">
+    <div class="search-bar">
+        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <input type="text" class="search-input" placeholder="Search projects..." id="searchInput">
+    </div>
+    
+    <div class="filters-bar">
+        <div class="filter-group">
+            <select class="filter-btn" id="projectFilter">
+                <option value="">All Projects</option>
+                <option value="project1">Website Redesign</option>
+                <option value="project2">Mobile App</option>
+                <option value="project3">Marketing Campaign</option>
+            </select>
+
+            <select class="filter-btn" id="priorityFilter">
+                <option value="">All Priorities</option>
+                <option value="high">High Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="low">Low Priority</option>
+            </select>
+
+            <select class="filter-btn" id="typeFilter">
+                <option value="">All Types</option>
+                <option value="bug">Bug</option>
+                <option value="feature">Feature</option>
+                <option value="task">Task</option>
+                <option value="improvement">Improvement</option>
+            </select>
+
+            <select class="filter-btn" id="dueDateFilter">
+                <option value="">All Due Dates</option>
+                <option value="overdue">Overdue</option>
+                <option value="today">Due Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="none">No Due Date</option>
+            </select>
+        </div>
+    </div>
+
+
+</div>
+
+{% if not tasks%}
+
+<div class="empty-state text-center">
+    <i class="bi bi-clipboard-check"></i>
+    <h3>No Tasks Assigned</h3>
+    <p>You don't have any tasks assigned to you yet. Check your projects to see what you can work on.</p>
+</div>
+
+{% else %}
+
+        <div class="tasks-container">
+            <!-- Overdue Section -->
+            <div class="section-header">
+                <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                Overdue
+            </div>
+
+            <!-- No overdue tasks message -->
+            <div class="alert alert-success d-flex align-items-center" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <div>Great! You have no overdue tasks.</div>
+            </div>
+
+            <!-- Due Soon Section -->
+            <div class="section-header">
+                <i class="bi bi-calendar-event"></i>
+                Due Soon
+            </div>
+
+            <!-- Task Card 1 -->
+            <div class="task-card" onclick="window.location.href='#'">
+                <div class="task-header">
+                    <h3 class="task-title">Task 3...</h3>
+                    <div class="task-actions">
+                        <button class="task-action-btn" onclick="event.stopPropagation();" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="task-action-btn" onclick="event.stopPropagation();" title="Complete">
+                            <i class="bi bi-check-circle"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <p class="task-description">Task 3</p>
+
+                <div class="task-meta">
+                    <a href="#" class="task-project" onclick="event.stopPropagation();">
+                        <span class="project-color" style="background: #3b82f6;"></span>
+                        <i class="bi bi-folder project-icon"></i>
+                        <span>Website Redesign</span>
+                    </a>
+                    <div class="task-badges">
+                        <span class="badge-custom" style="background: #f0f1f3; color: #5e6c84;">
+                            <i class="bi bi-kanban"></i>
+                            To Do
+                        </span>
+                        <span class="badge-custom type-feature">
+                            <i class="bi bi-stars"></i>
+                            Feature
+                        </span>
+                        <span class="badge-custom priority-medium">
+                            <i class="bi bi-exclamation-circle"></i>
+                            Medium
+                        </span>
+                    </div>
+                </div>
+
+                <div class="task-footer">
+                    <div class="task-info">
+                        <div class="task-info-item">
+                            <i class="bi bi-person-circle"></i>
+                            <span>Ramil Yacat</span>
+                        </div>
+                        <div class="task-info-item">
+                            <i class="bi bi-chat-left-text"></i>
+                            <span>0 comments</span>
+                        </div>
+                    </div>
+                    <span class="due-date upcoming">
+                        <i class="bi bi-calendar"></i>
+                        Sep 30
+                    </span>
+                </div>
+            </div>
+
+            <!-- Today/No Due Date Section -->
+            <div class="section-header">
+                <i class="bi bi-inbox"></i>
+                Other Tasks
+            </div>
+
+            <!-- Task Card 2 -->
+            <div class="task-card" onclick="window.location.href='#'">
+                <div class="task-header">
+                    <h3 class="task-title">Task4</h3>
+                    <div class="task-actions">
+                        <button class="task-action-btn" onclick="event.stopPropagation();" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="task-action-btn" onclick="event.stopPropagation();" title="Complete">
+                            <i class="bi bi-check-circle"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="task-meta">
+                    <a href="#" class="task-project" onclick="event.stopPropagation();">
+                        <span class="project-color" style="background: #3b82f6;"></span>
+                        Website Redesign
+                    </a>
+                    <div class="task-badges">
+                        <span class="badge-custom type-task">
+                            <i class="bi bi-clipboard-check"></i>
+                            Task
+                        </span>
+                        <span class="badge-custom priority-medium">
+                            <i class="bi bi-exclamation-circle"></i>
+                            Medium
+                        </span>
+                    </div>
+                </div>
+
+                <div class="task-footer">
+                    <div class="task-info">
+                        <div class="task-info-item">
+                            <i class="bi bi-person-circle"></i>
+                            <span>Ramil Yacat</span>
+                        </div>
+                        <div class="task-info-item">
+                            <i class="bi bi-chat-left-text"></i>
+                            <span>0 comments</span>
+                        </div>
+                    </div>
+                    <span class="due-date normal">
+                        <i class="bi bi-calendar-x"></i>
+                        No due date
+                    </span>
+                </div>
+            </div>
+
+            <!-- Task Card 3 -->
+            <div class="task-card" onclick="window.location.href='#'">
+                <div class="task-header">
+                    <h3 class="task-title">Task 6</h3>
+                    <div class="task-actions">
+                        <button class="task-action-btn" onclick="event.stopPropagation();" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="task-action-btn" onclick="event.stopPropagation();" title="Complete">
+                            <i class="bi bi-check-circle"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="task-meta">
+                    <a href="#" class="task-project" onclick="event.stopPropagation();">
+                        <span class="project-color" style="background: #3b82f6;"></span>
+                        Website Redesign
+                    </a>
+                    <div class="task-badges">
+                        <span class="badge-custom type-task">
+                            <i class="bi bi-clipboard-check"></i>
+                            Task
+                        </span>
+                        <span class="badge-custom priority-medium">
+                            <i class="bi bi-exclamation-circle"></i>
+                            Medium
+                        </span>
+                    </div>
+                </div>
+
+                <div class="task-footer">
+                    <div class="task-info">
+                        <div class="task-info-item">
+                            <i class="bi bi-person-circle"></i>
+                            <span>Ramil Yacat</span>
+                        </div>
+                        <div class="task-info-item">
+                            <i class="bi bi-chat-left-text"></i>
+                            <span>0 comments</span>
+                        </div>
+                    </div>
+                    <span class="due-date normal">
+                        <i class="bi bi-calendar-x"></i>
+                        No due date
+                    </span>
+                </div>
+            </div>
+        </div>
+
+
+{% endif %}
+{% endblock %}
