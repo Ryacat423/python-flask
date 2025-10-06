@@ -86,7 +86,9 @@
                             <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Edit Project</a></li>
                             <li><a class="dropdown-item" href="#"><i class="bi bi-person-plus me-2"></i>Add Member</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Delete Project</a></li>
+                            <li><a class="dropdown-item text-danger" 
+                                href="{{ url_for('confirm_delete_project', project_id=project._id) }}"    
+                            ><i class="bi bi-trash me-2"></i>Delete Project</a></li>
                             {% endif %}
                         </ul>
                     </div>
@@ -102,7 +104,7 @@
                         <span>{{ project.progress }}%</span>
                     </div>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: 2%"></div>
+                        <div class="progress-fill" data-progress="{{ project.progress }}" style="width: 0%"></div>
                     </div>
                 </div>
                 
@@ -139,7 +141,6 @@
         {% endif %}
     </div>
 
-    <!-- List View -->
     <div class="projects-list hidden" id="projectsList">
         {% if projects %}
             {% for project in projects %}
