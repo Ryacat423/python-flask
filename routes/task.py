@@ -2,14 +2,52 @@ from db import projects_collection, column_collection, tasks_collection, users_c
 from utils.socket import broadcast_to_project, get_socketio
 from flask import request, flash, redirect, url_for, session, jsonify, render_template
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def my_tasks():
-    user = session.get('user_id')
+    user_id = session.get('user_id')
+    tasks_cursor = tasks_collection.find({'assigned_to': ObjectId(user_id)})
+    tasks_list = list(tasks_cursor)
 
-    res = tasks_collection.find({'assigned_to': ObjectId(user)}, {})
-    print(res)
-    return render_template('/tasks/tasks.html', tasks = res)
+    enriched_tasks = []
+    for task in tasks_list:
+        project = projects_collection.find_one({'_id': task['project_id']})
+
+        column = column_collection.find_one({'_id': task['column_id']})
+
+        task['project_name'] = project.get('project_name', 'Unknown Project') if project else 'Unknown Project'
+        task['project_color'] = project.get('color', '#3b82f6') if project else '#3b82f6'
+        task['column_name'] = column.get('label', 'Unknown Column') if column else 'Unknown Column'
+        
+        enriched_tasks.append(task)
+    
+    now = datetime.now()
+    
+    overdue_tasks = []
+    due_soon_tasks = []
+    other_tasks = []
+    
+    for task in enriched_tasks:
+        due_date = task.get('due_date')
+        
+        if due_date:
+            if due_date < now:
+                overdue_tasks.append(task)
+            elif due_date <= now + timedelta(days=7):
+                due_soon_tasks.append(task)
+            else:
+                other_tasks.append(task)
+        else:
+            other_tasks.append(task)
+    
+    overdue_tasks.sort(key=lambda x: x.get('due_date', datetime.min))
+    due_soon_tasks.sort(key=lambda x: x.get('due_date', datetime.min))
+    
+    return render_template('/tasks/tasks.html', 
+                         tasks=enriched_tasks,
+                         overdue_tasks=overdue_tasks,
+                         due_soon_tasks=due_soon_tasks,
+                         other_tasks=other_tasks)
 
 def task_create(project_id):
     try:
@@ -123,7 +161,6 @@ def task_create(project_id):
                         }
                     )
                 
-                flash('Task created successfully!', 'success')
                 return redirect(url_for('view_project', project_id=project_id))
             else:
                 flash('Failed to create task. Please try again.', 'error')
@@ -327,7 +364,6 @@ def task_update(project_id, task_id):
                         }
                     )
                 
-                flash('Task updated successfully!', 'success')
                 return redirect(url_for('view_project', project_id=project_id))
             else:
                 flash('No changes were made to the task.', 'info')
@@ -393,7 +429,6 @@ def task_delete(project_id, task_id):
                     }
                 )
             
-            flash('Task deleted successfully!', 'success')
         else:
             flash('Failed to delete task.', 'error')
         
