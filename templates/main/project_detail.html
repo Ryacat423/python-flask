@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="{{url_for('static', filename='css/main/projects.css')}}">
 <link rel="stylesheet" href="{{url_for('static', filename='css/main/board.css')}}">
 <link rel="stylesheet" href="{{url_for('static', filename='css/main/modal.css')}}">
+<link rel="stylesheet" href="{{url_for('static', filename='css/others/offcanvas.css')}}">
 {% endblock %}
 
 {% block content %}
@@ -92,7 +93,7 @@
 
                     {% if column.tasks %}
                         {% for task in column.tasks %}
-                        <div class="task-card border rounded p-3 bg-white" 
+                        <div class="task-card border" 
                              draggable="true"
                              data-task-id="{{ task._id }}"
                              ondragstart="handleDragStart(event)"
@@ -118,10 +119,16 @@
                                             {% endfor %}
                                             <hr class="my-1" style="margin: 0.25rem 0;">
                                             <button class="task-menu-item"
-                                                onclick="editTask('{{ task._id }}')""
+                                                onclick="editTask('{{ task._id }}')"
                                             >
                                                 <i class="bi bi-pencil"></i>
                                                 Edit Task
+                                            </button>
+                                            <button class="task-menu-item"
+                                                onclick="viewTaskDetail('{{ task._id }}')"
+                                            >
+                                                <i class="bi bi-eye"></i>
+                                                View Task Details
                                             </button>
                                             <button class="task-menu-item text-danger" onclick="deleteTask('{{ task._id }}')">
                                                 <i class="bi bi-trash"></i>
@@ -152,6 +159,7 @@
                                     </div>
                                     <span class="small text-muted">{{ task.assignee_name if task.assignee_name else 'Unassigned' }}</span>
                                 </div>
+
                                 {% if task.due_date %}
                                 <div class="d-flex align-items-center gap-1 small text-muted">
                                     <i class="bi bi-calendar"></i>
@@ -189,6 +197,7 @@
     {% endif %}
 
     {% include './components/modals.html '%}
+    {% include './components/offcanvas.html' %}
 
 {% endblock %}
 
@@ -203,4 +212,5 @@ window.USER_NAME = '{{ session.get("name", "Anonymous User") }}';
 <script src="{{url_for('static', filename="js/modal.js")}}"></script>
 <script src="{{url_for('static', filename="js/board.js")}}"></script>
 <script src="{{url_for('static', filename="js/socket.js")}}"></script>
+<script src="{{url_for('static', filename='js/task_detail.js')}}"></script>
 {% endblock %}
