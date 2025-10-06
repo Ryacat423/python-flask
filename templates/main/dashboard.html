@@ -7,28 +7,151 @@
 
 {% block content %}
 
-<div class="header">
-  <h1>Hello <span style="color: var(--primary-blue);">{{user_name}}</h1>
+<div class="dashboard-header">
+  <h1>Welcome back, <span style="color: var(--primary-blue);">{{user_name}}!</h1>
   <p>Manage and track all your projects in one place</p>
 </div>
 
-<div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-number">{{ stats.total_projects if stats else 0 }}</div>
-      <div class="stat-label">Total Projects</div>
+<div class="container" style="max-width: 1200px;">
+    <div class="quick-actions">
+        <a href="{{url_for('create_project')}}" class="action-card">
+            <div class="action-card-icon">
+                <i class="bi bi-plus-lg"></i>
+            </div>
+            <h3>Create New Project</h3>
+            <p>Start organizing your work with a new project board</p>
+        </a>
+
+        <a href="{{url_for('tasks')}}" class="action-card">
+            <div class="action-card-icon">
+                <i class="bi bi-clipboard-check"></i>
+            </div>
+            <h3>My Tasks</h3>
+            <p>View all tasks assigned to you across projects</p>
+        </a>
+
+        <a href="{{url_for('projects')}}" class="action-card">
+            <div class="action-card-icon">
+                <i class="bi bi-folder2-open"></i>
+            </div>
+            <h3>Browse Projects</h3>
+            <p>See all your projects and team boards</p>
+        </a>
     </div>
-    <div class="stat-card active">
-      <div class="stat-number">{{ stats.active_projects if stats else 0 }}</div>
-      <div class="stat-label">Active Projects</div>
+
+    <div class="section-header">
+        <div class="section-title">
+            <i class="bi bi-star-fill"></i>
+            <span>Starred Projects</span>
+        </div>
+        <a href="{{url_for('projects')}}" class="view-all-link">
+            View all projects
+            <i class="bi bi-arrow-right"></i>
+        </a>
     </div>
-    <div class="stat-card">
-      <div class="stat-number">{{ stats.completed_projects if stats else 0 }}</div>
-      <div class="stat-label">Completed</div>
+
+    <div class="projects-grid" id="starredProjects">
+        <a href="#" class="project-card">
+            <div class="project-card-header blue">
+                <button class="star-button starred" onclick="event.preventDefault(); toggleStar(this);">
+                    <i class="bi bi-star-fill"></i>
+                </button>
+            </div>
+            <div class="project-card-body">
+                <h3 class="project-card-title">Website Redesign</h3>
+                <div class="project-card-meta">
+                    <span><i class="bi bi-people-fill"></i>5 members</span>
+                    <span><i class="bi bi-clipboard"></i>12 tasks</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- Project Card 2 -->
+        <a href="#" class="project-card">
+            <div class="project-card-header green">
+                <button class="star-button starred" onclick="event.preventDefault(); toggleStar(this);">
+                    <i class="bi bi-star-fill"></i>
+                </button>
+            </div>
+            <div class="project-card-body">
+                <h3 class="project-card-title">Marketing Campaign Q1</h3>
+                <div class="project-card-meta">
+                    <span><i class="bi bi-people-fill"></i>3 members</span>
+                    <span><i class="bi bi-clipboard"></i>8 tasks</span>
+                </div>
+            </div>
+        </a>
     </div>
-    <div class="stat-card">
-      <div class="stat-number">{{ stats.on_hold_projects if stats else 0 }}</div>
-      <div class="stat-label">On Hold</div>
+
+    <!-- Recently Viewed -->
+    <div class="section-header">
+        <div class="section-title">
+            <i class="bi bi-clock-history"></i>
+            <span>Recently Viewed</span>
+        </div>
     </div>
+
+    <div class="projects-grid" id="recentProjects">
+        <!-- Project Card 3 -->
+        <a href="#" class="project-card">
+            <div class="project-card-header purple">
+                <button class="star-button" onclick="event.preventDefault(); toggleStar(this);">
+                    <i class="bi bi-star"></i>
+                </button>
+            </div>
+            <div class="project-card-body">
+                <h3 class="project-card-title">Mobile App Development</h3>
+                <div class="project-card-meta">
+                    <span><i class="bi bi-people-fill"></i>8 members</span>
+                    <span><i class="bi bi-clipboard"></i>24 tasks</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- Project Card 4 -->
+        <a href="#" class="project-card">
+            <div class="project-card-header orange">
+                <button class="star-button" onclick="event.preventDefault(); toggleStar(this);">
+                    <i class="bi bi-star"></i>
+                </button>
+            </div>
+            <div class="project-card-body">
+                <h3 class="project-card-title">Product Launch</h3>
+                <div class="project-card-meta">
+                    <span><i class="bi bi-people-fill"></i>4 members</span>
+                    <span><i class="bi bi-clipboard"></i>15 tasks</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- Project Card 5 -->
+        <a href="#" class="project-card">
+            <div class="project-card-header teal">
+                <button class="star-button" onclick="event.preventDefault(); toggleStar(this);">
+                    <i class="bi bi-star"></i>
+                </button>
+            </div>
+            <div class="project-card-body">
+                <h3 class="project-card-title">Team Onboarding</h3>
+                <div class="project-card-meta">
+                    <span><i class="bi bi-people-fill"></i>2 members</span>
+                    <span><i class="bi bi-clipboard"></i>6 tasks</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!--
+    <div class="empty-state">
+        <i class="bi bi-folder2-open"></i>
+        <h3>No Projects Yet</h3>
+        <p>Create your first project to start organizing your work</p>
+        <a href="#" class="btn-primary-custom">
+            <i class="bi bi-plus-lg"></i>
+            Create Project
+        </a>
+    </div>
+    -->
 </div>
 
 {% endblock %}
