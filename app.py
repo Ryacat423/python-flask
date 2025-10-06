@@ -225,6 +225,11 @@ def create_column(project_id):
 # ====== END OF PROJECT ROUTES ======
 
 # ====== TASK ROUTES ======
+@app.route('/tasks')
+@login_required
+def tasks():
+    return my_tasks()
+
 @app.route('/projects/<project_id>/tasks/create', methods=['POST'])
 @login_required
 def create_task(project_id):
@@ -244,6 +249,11 @@ def delete_task(project_id, task_id):
 @login_required
 def edit_task(project_id, task_id):
     return task_update(project_id, task_id)
+
+@app.route('/projects/<project_id>/tasks/<task_id>/detail', methods=['GET'])
+@login_required
+def view_task_detail(project_id, task_id):
+    return task_view_detail(project_id, task_id)
 
 # ====== PROFILE ROUTES ======
 @login_required
