@@ -6,15 +6,20 @@ from datetime import datetime, timedelta
 
 def my_tasks():
     user_id = session.get('user_id')
-    tasks_cursor = tasks_collection.find({'assigned_to': ObjectId(user_id)})
+    
+    # Find all tasks assigned to the current user
+    tasks_cursor = tasks_collection.find({'assigned_to': user_id})
     tasks_list = list(tasks_cursor)
 
     enriched_tasks = []
     for task in tasks_list:
+        # Get project details
         project = projects_collection.find_one({'_id': task['project_id']})
-
+        
+        # Get column details
         column = column_collection.find_one({'_id': task['column_id']})
 
+        # Enrich task with additional information
         task['project_name'] = project.get('project_name', 'Unknown Project') if project else 'Unknown Project'
         task['project_color'] = project.get('color', '#3b82f6') if project else '#3b82f6'
         task['column_name'] = column.get('label', 'Unknown Column') if column else 'Unknown Column'
@@ -27,23 +32,27 @@ def my_tasks():
     due_soon_tasks = []
     other_tasks = []
     
+    # Categorize tasks based on due date
     for task in enriched_tasks:
         due_date = task.get('due_date')
         
         if due_date:
-            if due_date < now:
-                overdue_tasks.append(task)
-            elif due_date <= now + timedelta(days=7):
-                due_soon_tasks.append(task)
-            else:
-                other_tasks.append(task)
+            # Make sure due_date is a datetime object
+            if isinstance(due_date, datetime):
+                if due_date < now:
+                    overdue_tasks.append(task)
+                elif due_date <= now + timedelta(days=7):
+                    due_soon_tasks.append(task)
+                else:
+                    other_tasks.append(task)
         else:
             other_tasks.append(task)
     
+    # Sort tasks by due date
     overdue_tasks.sort(key=lambda x: x.get('due_date', datetime.min))
     due_soon_tasks.sort(key=lambda x: x.get('due_date', datetime.min))
     
-    return render_template('/tasks/tasks.html', 
+    return render_template('tasks/tasks.html', 
                          tasks=enriched_tasks,
                          overdue_tasks=overdue_tasks,
                          due_soon_tasks=due_soon_tasks,
