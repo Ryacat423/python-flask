@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 
 from routes.auth import auth_register, auth_login, auth_logout
+
 from routes.projects import *
 from routes.task import *
 from routes.profile import *
 from routes.settings import *
+from routes.comments import *
 
 from utils.token import confirm_token
 from utils.decorators import login_required
@@ -255,6 +257,16 @@ def edit_task(project_id, task_id):
 def view_task_detail(project_id, task_id):
     return task_view_detail(project_id, task_id)
 
+@app.route('/projects/<project_id>/delete', methods=['GET'])
+@login_required
+def confirm_delete_project(project_id):
+    return project_delete_confirm(project_id)
+
+@app.route('/projects/<project_id>/delete', methods=['POST'])
+@login_required
+def delete_project(project_id):
+    return project_delete(project_id)
+
 # ====== PROFILE ROUTES ======
 @login_required
 @app.route('/profile', methods=['GET', 'POST'])
@@ -269,6 +281,30 @@ def profile():
 def settings():
     return view_settings()
 # ====== END OF SETTINGS ROUTES ======
+
+# ====== COMMENT ROUTES ======
+@app.route('/projects/<project_id>/tasks/<task_id>/comments', methods=['GET'])
+@login_required
+def get_comments(project_id, task_id):
+    return comment_list(project_id, task_id)
+
+@app.route('/projects/<project_id>/tasks/<task_id>/comments/create', methods=['POST'])
+@login_required
+def add_comment(project_id, task_id):
+    return comment_create(project_id, task_id)
+
+@app.route('/projects/<project_id>/tasks/<task_id>/comments/<comment_id>/edit', methods=['PUT'])
+@login_required
+def update_comment(project_id, task_id, comment_id):
+    return comment_update(project_id, task_id, comment_id)
+
+@app.route('/projects/<project_id>/tasks/<task_id>/comments/<comment_id>/delete', methods=['DELETE'])
+@login_required
+def delete_comment(project_id, task_id, comment_id):
+    return comment_delete(project_id, task_id, comment_id)
+
+# ====== END OF COMMENT ROUTES ======
+
 @app.context_processor
 def inject_current_year():
     return {'current_year': datetime.now().year}
