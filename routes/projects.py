@@ -219,12 +219,36 @@ def project_view(project_id):
             }
         )
 
+        # Fixed aggregation pipeline
         columns_pipeline = [
             {'$match': {'project': ObjectId(project_id)}},
             {'$lookup': {
                 'from': 'tasks',
-                'localField': '_id',
-                'foreignField': 'column_id',
+                'let': {'column_id': '$_id'},
+                'pipeline': [
+                    {
+                        '$match': {
+                            '$expr': {
+                                '$and': [
+                                    {'$eq': ['$column_id', '$$column_id']},
+                                    {'$eq': ['$project_id', ObjectId(project_id)]}
+                                ]
+                            }
+                        }
+                    },
+                    {'$lookup': {
+                        'from': 'comments',
+                        'localField': '_id',
+                        'foreignField': 'task_id',
+                        'as': 'comments'
+                    }},
+                    {'$addFields': {
+                        'comment_count': {'$size': '$comments'}
+                    }},
+                    {'$project': {
+                        'comments': 0  # Remove comments array, keep only count
+                    }}
+                ],
                 'as': 'tasks'
             }},
             {'$addFields': {
@@ -235,37 +259,15 @@ def project_view(project_id):
         
         columns = list(column_collection.aggregate(columns_pipeline))
         
-        total_tasks = sum(col.get('task_count', 0) for col in columns)
-        task_stats = {}
-        if columns:
-            task_pipeline = [
-                {'$match': {'project_id': ObjectId(project_id)}},
-                {'$group': {
-                    '_id': '$status',
-                    'count': {'$sum': 1}
-                }}
-            ]
-            task_stats_result = list(tasks_collection.aggregate(task_pipeline))
-            for stat in task_stats_result:
-                task_stats[stat['_id']] = stat['count']
-        
-        stats = {
-            'total_projects': total_tasks,
-            'active_projects': task_stats.get('in_progress', 0),
-            'completed_projects': task_stats.get('completed', 0),
-            'on_hold_projects': len(project.get('members', [])),
-        }
-        
         return render_template('/main/project_detail.html', 
                              project=project, 
-                             columns=columns,
-                             stats=stats)
+                             columns=columns)
         
     except Exception as e:
         print(f"Project view error: {e}")
         flash('An error occurred while loading the project.', 'error')
         return redirect(url_for('projects'))
-    
+
 def column_create(project_id):        
     try:
         if request.method == 'POST':
