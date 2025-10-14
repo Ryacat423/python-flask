@@ -51,39 +51,34 @@
     </div>
 
     <div class="projects-grid" id="starredProjects">
-        <a href="#" class="project-card">
-            <div class="project-card-header blue">
-                <button class="star-button starred" onclick="event.preventDefault(); toggleStar(this);">
-                    <i class="bi bi-star-fill"></i>
-                </button>
-            </div>
-            <div class="project-card-body">
-                <h3 class="project-card-title">Website Redesign</h3>
-                <div class="project-card-meta">
-                    <span><i class="bi bi-people-fill"></i>5 members</span>
-                    <span><i class="bi bi-clipboard"></i>12 tasks</span>
+        {% if projects %}
+            {% for project in projects %}
+                <a href="{{url_for('view_project', project_id=project._id)}}" class="project-card">
+                    <div class="project-card-header {{project.color}}">
+                        <button class="star-button starred" onclick="event.preventDefault(); toggleStar(this);">
+                            <i class="bi bi-star-fill"></i>
+                        </button>
+                    </div>
+                    <div class="project-card-body">
+                        <h3 class="project-card-title">{{project.project_name}}</h3>
+                        <div class="project-card-meta">
+                            <span><i class="bi bi-people-fill"></i>{{ project.member_count or 1 }} member{{ 's' if (project.member_count or 1) != 1 else '' }}</span>
+                            <span><i class="bi bi-clipboard"></i>{{ project.total_tasks or 0 }} task{{ 's' if (project.total_tasks or 0) != 1 else '' }}</span>
+                        </div>
+                    </div>
+                </a>
+            {%endfor%}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-content text-center">
+                    <i class="bi bi-folder2-open"></i>
+                    <h3>No Projects Yet</h3>
+                    <p>Create your first project to start organizing your work</p>
                 </div>
             </div>
-        </a>
-
-        <!-- Project Card 2 -->
-        <a href="#" class="project-card">
-            <div class="project-card-header green">
-                <button class="star-button starred" onclick="event.preventDefault(); toggleStar(this);">
-                    <i class="bi bi-star-fill"></i>
-                </button>
-            </div>
-            <div class="project-card-body">
-                <h3 class="project-card-title">Marketing Campaign Q1</h3>
-                <div class="project-card-meta">
-                    <span><i class="bi bi-people-fill"></i>3 members</span>
-                    <span><i class="bi bi-clipboard"></i>8 tasks</span>
-                </div>
-            </div>
-        </a>
+        {% endif %}
     </div>
 
-    <!-- Recently Viewed -->
     <div class="section-header">
         <div class="section-title">
             <i class="bi bi-clock-history"></i>
@@ -92,66 +87,36 @@
     </div>
 
     <div class="projects-grid" id="recentProjects">
-        <!-- Project Card 3 -->
-        <a href="#" class="project-card">
-            <div class="project-card-header purple">
-                <button class="star-button" onclick="event.preventDefault(); toggleStar(this);">
-                    <i class="bi bi-star"></i>
-                </button>
-            </div>
-            <div class="project-card-body">
-                <h3 class="project-card-title">Mobile App Development</h3>
-                <div class="project-card-meta">
-                    <span><i class="bi bi-people-fill"></i>8 members</span>
-                    <span><i class="bi bi-clipboard"></i>24 tasks</span>
+        {% if projects %}
+            {% set has_recent = namespace(value=false) %}
+            {% for project in projects %}
+                {% if project.last_viewed %}
+                    {% set has_recent.value = true %}
+                    <a href="{{url_for('view_project', project_id=project._id)}}" class="project-card">
+                        <div class="project-card-header {{project.color}}">
+                            <button class="star-button starred" onclick="event.preventDefault(); toggleStar(this);">
+                                <i class="bi bi-star-fill"></i>
+                            </button>
+                        </div>
+                        <div class="project-card-body">
+                            <h3 class="project-card-title">{{project.project_name}}</h3>
+                            <div class="project-card-meta">
+                                <span><i class="bi bi-people-fill"></i>{{ project.member_count or 1 }} member{{ 's' if (project.member_count or 1) != 1 else '' }}</span>
+                                <span><i class="bi bi-clipboard"></i>{{ project.total_tasks or 0 }} task{{ 's' if (project.total_tasks or 0) != 1 else '' }}</span>
+                            </div>
+                        </div>
+                    </a>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-content text-center">
+                    <i class="bi bi-clock-history"></i>
+                    <h3>No Recently Viewed Projects</h3>
+                    <p>Projects you view will appear here</p>
                 </div>
-            </div>
-        </a>
-
-        <!-- Project Card 4 -->
-        <a href="#" class="project-card">
-            <div class="project-card-header orange">
-                <button class="star-button" onclick="event.preventDefault(); toggleStar(this);">
-                    <i class="bi bi-star"></i>
-                </button>
-            </div>
-            <div class="project-card-body">
-                <h3 class="project-card-title">Product Launch</h3>
-                <div class="project-card-meta">
-                    <span><i class="bi bi-people-fill"></i>4 members</span>
-                    <span><i class="bi bi-clipboard"></i>15 tasks</span>
-                </div>
-            </div>
-        </a>
-
-        <!-- Project Card 5 -->
-        <a href="#" class="project-card">
-            <div class="project-card-header teal">
-                <button class="star-button" onclick="event.preventDefault(); toggleStar(this);">
-                    <i class="bi bi-star"></i>
-                </button>
-            </div>
-            <div class="project-card-body">
-                <h3 class="project-card-title">Team Onboarding</h3>
-                <div class="project-card-meta">
-                    <span><i class="bi bi-people-fill"></i>2 members</span>
-                    <span><i class="bi bi-clipboard"></i>6 tasks</span>
-                </div>
-            </div>
-        </a>
+        {% endif %}
     </div>
-
-    <!--
-    <div class="empty-state">
-        <i class="bi bi-folder2-open"></i>
-        <h3>No Projects Yet</h3>
-        <p>Create your first project to start organizing your work</p>
-        <a href="#" class="btn-primary-custom">
-            <i class="bi bi-plus-lg"></i>
-            Create Project
-        </a>
-    </div>
-    -->
 </div>
 
 {% endblock %}
