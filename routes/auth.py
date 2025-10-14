@@ -42,7 +42,6 @@ def auth_register():
             return render_template('/auth/register.html')
         
         try:
-
             hashed_password = bcrypt.generate_password_hash(password)
             user_data = {
                 'firstname': fname,
@@ -55,7 +54,10 @@ def auth_register():
             result = users.insert_one(user_data)
             
             if result.inserted_id:
-                token = generate_confirmation_token(email).decode('utf-8')
+                token = generate_confirmation_token(email)
+                if isinstance(token, bytes):
+                    token = token.decode('utf-8')
+                
                 confirm_url = url_for('confirm_email', token=token, _external=True)
                 try:
                     msg = Message(
@@ -76,7 +78,7 @@ def auth_register():
                     mail.send(msg)
                     
                     flash('A confirmation email has been sent. Please check your inbox.', 'info')
-                    return redirect(url_for('login'), success = True)
+                    return redirect(url_for('login'))
                     
                 except Exception as email_error:
                     print(f"Email sending error: {email_error}")
@@ -89,7 +91,6 @@ def auth_register():
             return render_template('/auth/register.html')
     
     return render_template('/auth/register.html')
-
 def auth_login():
     if request.method == 'POST':
         email = request.form['email'].strip().lower()
