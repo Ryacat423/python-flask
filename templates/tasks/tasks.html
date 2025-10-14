@@ -3,7 +3,6 @@
 {% block additional_head %}
 <link rel="stylesheet" href="{{url_for('static', filename='css/main/tasks.css')}}">
 <link rel="stylesheet" href="{{url_for('static', filename='css/main/controls.css')}}">
-</style>
 {% endblock %}
 
 {% block content %}
@@ -17,16 +16,19 @@
         <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
-        <input type="text" class="search-input" placeholder="Search projects..." id="searchInput">
+        <input type="text" class="search-input" placeholder="Search tasks..." id="searchInput">
     </div>
     
     <div class="filters-bar">
         <div class="filter-group">
             <select class="filter-btn" id="projectFilter">
                 <option value="">All Projects</option>
-                <option value="project1">Website Redesign</option>
-                <option value="project2">Mobile App</option>
-                <option value="project3">Marketing Campaign</option>
+                {% if tasks %}
+                    {% set projects = tasks|map(attribute='project_name')|unique|list %}
+                    {% for project in projects %}
+                    <option value="{{ project }}">{{ project }}</option>
+                    {% endfor %}
+                {% endif %}
             </select>
 
             <select class="filter-btn" id="priorityFilter">
@@ -44,22 +46,27 @@
                 <option value="improvement">Improvement</option>
             </select>
 
+            <select class="filter-btn" id="statusFilter">
+                <option value="">All Statuses</option>
+                {% if tasks %}
+                    {% set columns = tasks|map(attribute='column_name')|unique|list %}
+                    {% for column in columns %}
+                    <option value="{{ column }}">{{ column }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+
             <select class="filter-btn" id="dueDateFilter">
                 <option value="">All Due Dates</option>
                 <option value="overdue">Overdue</option>
-                <option value="today">Due Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-                <option value="none">No Due Date</option>
+                <option value="due_soon">Due Soon (7 days)</option>
+                <option value="no_date">No Due Date</option>
             </select>
         </div>
     </div>
-
-
 </div>
 
-{% if not tasks%}
-
+{% if not tasks %}
 <div class="empty-state text-center">
     <i class="bi bi-clipboard-check"></i>
     <h3>No Tasks Assigned</h3>
@@ -68,186 +75,251 @@
 
 {% else %}
 
-        <div class="tasks-container">
-            <!-- Overdue Section -->
-            <div class="section-header">
-                <i class="bi bi-exclamation-triangle-fill text-danger"></i>
-                Overdue
-            </div>
+<div class="tasks-container">
+    <div class="section-header">
+        <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+        Overdue
+    </div>
 
-            <!-- No overdue tasks message -->
-            <div class="alert alert-success d-flex align-items-center" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i>
-                <div>Great! You have no overdue tasks.</div>
-            </div>
-
-            <!-- Due Soon Section -->
-            <div class="section-header">
-                <i class="bi bi-calendar-event"></i>
-                Due Soon
-            </div>
-
-            <!-- Task Card 1 -->
-            <div class="task-card" onclick="window.location.href='#'">
-                <div class="task-header">
-                    <h3 class="task-title">Task 3...</h3>
-                    <div class="task-actions">
-                        <button class="task-action-btn" onclick="event.stopPropagation();" title="Edit">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="task-action-btn" onclick="event.stopPropagation();" title="Complete">
-                            <i class="bi bi-check-circle"></i>
-                        </button>
-                    </div>
+    {% if overdue_tasks %}
+        {% for task in overdue_tasks %}
+        <div class="task-card" 
+             data-project="{{ task.project_name }}" 
+             data-priority="{{ task.priority }}" 
+             data-type="{{ task.type }}" 
+             data-status="{{ task.column_name }}"
+             data-due-date="overdue"
+             onclick="window.location.href='{{ url_for('view_project', project_id=task.project_id) }}'">
+            <div class="task-header">
+                <h3 class="task-title">{{ task.title }}</h3>
+                <div class="task-actions">
+                    <button class="task-action-btn" onclick="event.stopPropagation(); window.location.href='{{ url_for('edit_task', project_id=task.project_id, task_id=task._id) }}';" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="task-action-btn" onclick="event.stopPropagation();" title="Complete">
+                        <i class="bi bi-check-circle"></i>
+                    </button>
                 </div>
-                
-                <p class="task-description">Task 3</p>
+            </div>
+            
+            {% if task.description %}
+            <p class="task-description">{{ task.description }}</p>
+            {% endif %}
 
-                <div class="task-meta">
-                    <a href="#" class="task-project" onclick="event.stopPropagation();">
-                        <span class="project-color" style="background: #3b82f6;"></span>
-                        <i class="bi bi-folder project-icon"></i>
-                        <span>Website Redesign</span>
-                    </a>
-                    <div class="task-badges">
-                        <span class="badge-custom" style="background: #f0f1f3; color: #5e6c84;">
-                            <i class="bi bi-kanban"></i>
-                            To Do
-                        </span>
-                        <span class="badge-custom type-feature">
-                            <i class="bi bi-stars"></i>
-                            Feature
-                        </span>
-                        <span class="badge-custom priority-medium">
-                            <i class="bi bi-exclamation-circle"></i>
-                            Medium
-                        </span>
-                    </div>
-                </div>
-
-                <div class="task-footer">
-                    <div class="task-info">
-                        <div class="task-info-item">
-                            <i class="bi bi-person-circle"></i>
-                            <span>Ramil Yacat</span>
-                        </div>
-                        <div class="task-info-item">
-                            <i class="bi bi-chat-left-text"></i>
-                            <span>0 comments</span>
-                        </div>
-                    </div>
-                    <span class="due-date upcoming">
-                        <i class="bi bi-calendar"></i>
-                        Sep 30
+            <div class="task-meta">
+                <a href="{{ url_for('view_project', project_id=task.project_id) }}" class="task-project" onclick="event.stopPropagation();">
+                    <span class="project-color" style="background: {{ task.project_color }};"></span>
+                    <i class="bi bi-folder project-icon"></i>
+                    <span>{{ task.project_name }}</span>
+                </a>
+                <div class="task-badges">
+                    <span class="badge-custom" style="background: #f0f1f3; color: #5e6c84;">
+                        <i class="bi bi-kanban"></i>
+                        {{ task.column_name }}
+                    </span>
+                    <span class="badge-custom type-{{ task.type }}">
+                        <i class="bi bi-{% if task.type == 'feature' %}stars{% elif task.type == 'bug' %}bug{% elif task.type == 'improvement' %}arrow-up-circle{% else %}clipboard-check{% endif %}"></i>
+                        {{ task.type|capitalize }}
+                    </span>
+                    <span class="badge-custom priority-{{ task.priority }}">
+                        <i class="bi bi-exclamation-circle"></i>
+                        {{ task.priority|capitalize }}
                     </span>
                 </div>
             </div>
 
-            <!-- Today/No Due Date Section -->
-            <div class="section-header">
-                <i class="bi bi-inbox"></i>
-                Other Tasks
-            </div>
-
-            <!-- Task Card 2 -->
-            <div class="task-card" onclick="window.location.href='#'">
-                <div class="task-header">
-                    <h3 class="task-title">Task4</h3>
-                    <div class="task-actions">
-                        <button class="task-action-btn" onclick="event.stopPropagation();" title="Edit">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="task-action-btn" onclick="event.stopPropagation();" title="Complete">
-                            <i class="bi bi-check-circle"></i>
-                        </button>
+            <div class="task-footer">
+                <div class="task-info">
+                    <div class="task-info-item">
+                        <i class="bi bi-person-circle"></i>
+                        <span>{{ task.assignee_name }}</span>
+                    </div>
+                    <div class="task-info-item">
+                        <i class="bi bi-chat-left-text"></i>
+                        <span>0 comments</span>
                     </div>
                 </div>
-
-                <div class="task-meta">
-                    <a href="#" class="task-project" onclick="event.stopPropagation();">
-                        <span class="project-color" style="background: #3b82f6;"></span>
-                        Website Redesign
-                    </a>
-                    <div class="task-badges">
-                        <span class="badge-custom type-task">
-                            <i class="bi bi-clipboard-check"></i>
-                            Task
-                        </span>
-                        <span class="badge-custom priority-medium">
-                            <i class="bi bi-exclamation-circle"></i>
-                            Medium
-                        </span>
-                    </div>
-                </div>
-
-                <div class="task-footer">
-                    <div class="task-info">
-                        <div class="task-info-item">
-                            <i class="bi bi-person-circle"></i>
-                            <span>Ramil Yacat</span>
-                        </div>
-                        <div class="task-info-item">
-                            <i class="bi bi-chat-left-text"></i>
-                            <span>0 comments</span>
-                        </div>
-                    </div>
-                    <span class="due-date normal">
-                        <i class="bi bi-calendar-x"></i>
-                        No due date
-                    </span>
-                </div>
-            </div>
-
-            <!-- Task Card 3 -->
-            <div class="task-card" onclick="window.location.href='#'">
-                <div class="task-header">
-                    <h3 class="task-title">Task 6</h3>
-                    <div class="task-actions">
-                        <button class="task-action-btn" onclick="event.stopPropagation();" title="Edit">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="task-action-btn" onclick="event.stopPropagation();" title="Complete">
-                            <i class="bi bi-check-circle"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="task-meta">
-                    <a href="#" class="task-project" onclick="event.stopPropagation();">
-                        <span class="project-color" style="background: #3b82f6;"></span>
-                        Website Redesign
-                    </a>
-                    <div class="task-badges">
-                        <span class="badge-custom type-task">
-                            <i class="bi bi-clipboard-check"></i>
-                            Task
-                        </span>
-                        <span class="badge-custom priority-medium">
-                            <i class="bi bi-exclamation-circle"></i>
-                            Medium
-                        </span>
-                    </div>
-                </div>
-
-                <div class="task-footer">
-                    <div class="task-info">
-                        <div class="task-info-item">
-                            <i class="bi bi-person-circle"></i>
-                            <span>Ramil Yacat</span>
-                        </div>
-                        <div class="task-info-item">
-                            <i class="bi bi-chat-left-text"></i>
-                            <span>0 comments</span>
-                        </div>
-                    </div>
-                    <span class="due-date normal">
-                        <i class="bi bi-calendar-x"></i>
-                        No due date
-                    </span>
-                </div>
+                <span class="due-date overdue">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    {{ task.due_date.strftime('%b %d') }}
+                </span>
             </div>
         </div>
+        {% endfor %}
+    {% else %}
+    <div class="alert alert-success d-flex align-items-center" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <div>Great! You have no overdue tasks.</div>
+    </div>
+    {% endif %}
 
+    <!-- Due Soon Section -->
+    <div class="section-header">
+        <i class="bi bi-calendar-event"></i>
+        Due Soon
+    </div>
+
+    {% if due_soon_tasks %}
+        {% for task in due_soon_tasks %}
+        <div class="task-card" 
+             data-project="{{ task.project_name }}" 
+             data-priority="{{ task.priority }}" 
+             data-type="{{ task.type }}" 
+             data-status="{{ task.column_name }}"
+             data-due-date="due_soon"
+             onclick="window.location.href='{{ url_for('view_project', project_id=task.project_id) }}'">
+            <div class="task-header">
+                <h3 class="task-title">{{ task.title }}</h3>
+                <div class="task-actions">
+                    <button class="task-action-btn" onclick="event.stopPropagation(); window.location.href='{{ url_for('edit_task', project_id=task.project_id, task_id=task._id) }}';" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="task-action-btn" onclick="event.stopPropagation();" title="Complete">
+                        <i class="bi bi-check-circle"></i>
+                    </button>
+                </div>
+            </div>
+            
+            {% if task.description %}
+            <p class="task-description">{{ task.description }}</p>
+            {% endif %}
+
+            <div class="task-meta">
+                <a href="{{ url_for('view_project', project_id=task.project_id) }}" class="task-project" onclick="event.stopPropagation();">
+                    <span class="project-color" style="background: {{ task.project_color }};"></span>
+                    <i class="bi bi-folder project-icon"></i>
+                    <span>{{ task.project_name }}</span>
+                </a>
+                <div class="task-badges">
+                    <span class="badge-custom" style="background: #f0f1f3; color: #5e6c84;">
+                        <i class="bi bi-kanban"></i>
+                        {{ task.column_name }}
+                    </span>
+                    <span class="badge-custom type-{{ task.type }}">
+                        <i class="bi bi-{% if task.type == 'feature' %}stars{% elif task.type == 'bug' %}bug{% elif task.type == 'improvement' %}arrow-up-circle{% else %}clipboard-check{% endif %}"></i>
+                        {{ task.type|capitalize }}
+                    </span>
+                    <span class="badge-custom priority-{{ task.priority }}">
+                        <i class="bi bi-exclamation-circle"></i>
+                        {{ task.priority|capitalize }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="task-footer">
+                <div class="task-info">
+                    <div class="task-info-item">
+                        <i class="bi bi-person-circle"></i>
+                        <span>{{ task.assignee_name }}</span>
+                    </div>
+                    <div class="task-info-item">
+                        <i class="bi bi-chat-left-text"></i>
+                        <span>0 comments</span>
+                    </div>
+                </div>
+                <span class="due-date upcoming">
+                    <i class="bi bi-calendar"></i>
+                    {{ task.due_date.strftime('%b %d') }}
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="alert alert-info d-flex align-items-center" role="alert">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        <div>No tasks due in the next 7 days.</div>
+    </div>
+    {% endif %}
+
+    <!-- Other Tasks Section -->
+    <div class="section-header">
+        <i class="bi bi-inbox"></i>
+        Other Tasks
+    </div>
+
+    {% if other_tasks %}
+        {% for task in other_tasks %}
+        <div class="task-card" 
+             data-project="{{ task.project_name }}" 
+             data-priority="{{ task.priority }}" 
+             data-type="{{ task.type }}" 
+             data-status="{{ task.column_name }}"
+             data-due-date="{% if task.due_date %}other{% else %}no_date{% endif %}"
+             onclick="window.location.href='{{ url_for('view_project', project_id=task.project_id) }}'">
+            <div class="task-header">
+                <h3 class="task-title">{{ task.title }}</h3>
+                <div class="task-actions">
+                    <button class="task-action-btn" onclick="event.stopPropagation(); window.location.href='{{ url_for('edit_task', project_id=task.project_id, task_id=task._id) }}';" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="task-action-btn" onclick="event.stopPropagation();" title="Complete">
+                        <i class="bi bi-check-circle"></i>
+                    </button>
+                </div>
+            </div>
+
+            {% if task.description %}
+            <p class="task-description">{{ task.description }}</p>
+            {% endif %}
+
+            <div class="task-meta">
+                <a href="{{ url_for('view_project', project_id=task.project_id) }}" class="task-project" onclick="event.stopPropagation();">
+                    <span class="project-color" style="background: {{ task.project_color }};"></span>
+                    <i class="bi bi-folder project-icon"></i>
+                    <span>{{ task.project_name }}</span>
+                </a>
+                <div class="task-badges">
+                    <span class="badge-custom" style="background: #f0f1f3; color: #5e6c84;">
+                        <i class="bi bi-kanban"></i>
+                        {{ task.column_name }}
+                    </span>
+                    <span class="badge-custom type-{{ task.type }}">
+                        <i class="bi bi-{% if task.type == 'feature' %}stars{% elif task.type == 'bug' %}bug{% elif task.type == 'improvement' %}arrow-up-circle{% else %}clipboard-check{% endif %}"></i>
+                        {{ task.type|capitalize }}
+                    </span>
+                    <span class="badge-custom priority-{{ task.priority }}">
+                        <i class="bi bi-exclamation-circle"></i>
+                        {{ task.priority|capitalize }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="task-footer">
+                <div class="task-info">
+                    <div class="task-info-item">
+                        <i class="bi bi-person-circle"></i>
+                        <span>{{ task.assignee_name }}</span>
+                    </div>
+                    <div class="task-info-item">
+                        <i class="bi bi-chat-left-text"></i>
+                        <span>0 comments</span>
+                    </div>
+                </div>
+                {% if task.due_date %}
+                <span class="due-date normal">
+                    <i class="bi bi-calendar"></i>
+                    {{ task.due_date.strftime('%b %d') }}
+                </span>
+                {% else %}
+                <span class="due-date normal">
+                    <i class="bi bi-calendar-x"></i>
+                    No due date
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="alert alert-secondary d-flex align-items-center" role="alert">
+        <i class="bi bi-inbox-fill me-2"></i>
+        <div>No other tasks found.</div>
+    </div>
+    {% endif %}
+</div>
 
 {% endif %}
+
+{% block scripts %}
+<script src="{{url_for('static', filename='js/my_task.js')}}"></script>
+{% endblock %}
 {% endblock %}
